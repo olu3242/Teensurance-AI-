@@ -10,3 +10,4 @@ upload/
 .env.*.local
 .vercel/
 coverage/
+.claude/
