@@ -52,6 +52,16 @@ function apply(state:State,command:OrchestrationCommand,now:string):DomainEvent[
   state.evidence.unshift({id:randomUUID(),kind:'supervisor_dispute',subjectId:log.id,actor:'parent',createdAt:now,summary:String(command.reason)});events.push({type:'drive.disputed',subjectId:log.id});
  }
  if(command.action==='jurisdiction'){state.jurisdiction={name:String(command.name),status:'unverified'};events.push({type:'jurisdiction.selected'});}
+ if(command.action==='consent_teen'){state.consent.teenAcknowledged=true;state.consent.updatedAt=now;state.evidence.unshift({id:randomUUID(),kind:'consent',subjectId:'teen',actor:'teen',createdAt:now,summary:'Teen acknowledged the local pilot data purpose.'});events.push({type:'consent.teen.acknowledged'});}
+ if(command.action==='consent_guardian'){state.consent.guardianAcknowledged=true;state.consent.updatedAt=now;state.evidence.unshift({id:randomUUID(),kind:'consent',subjectId:'guardian',actor:'parent',createdAt:now,summary:'Guardian acknowledged the local pilot data purpose.'});events.push({type:'consent.guardian.acknowledged'});}
+ if(command.action==='guardian'){state.guardian={relationshipStatus:'verified',verifiedAt:now};events.push({type:'guardian.relationship.attested'});}
+ if(command.action==='requirement_source'){
+  const id=randomUUID();state.requirementSources.unshift({id,jurisdiction:String(command.jurisdiction),url:String(command.url),title:String(command.title),status:'pending_review'});
+  state.reviewQueue.unshift({id:randomUUID(),kind:'requirement_source',status:'open',reason:`Review official-source candidate: ${String(command.title)}`,createdAt:now});
+  events.push({type:'requirement.source.submitted',subjectId:id});
+ }
+ if(command.action==='resolve_review'){const review=state.reviewQueue.find(x=>x.id===command.id);if(review){review.status='resolved';review.resolvedAt=now;}events.push({type:'ops.review.resolved',subjectId:String(command.id)});}
+ if(command.action==='resolve_exception'){const item=state.exceptions.find(x=>x.id===command.id);if(item){item.status='resolved';item.resolvedAt=now;}events.push({type:'ops.exception.resolved',subjectId:String(command.id)});}
  if(command.action==='cover'){const item=String(command.item) as keyof State['cover'];if(item in state.cover)state.cover[item]=Boolean(command.complete);events.push({type:'coverage.preparation.updated'});}
  if(command.action==='goal'){state.goalHours=Number(command.hours);events.push({type:'family.goal.updated'});}
  return events;
@@ -65,6 +75,10 @@ export function orchestrate(state:State,command:OrchestrationCommand):Orchestrat
  if(pre.decision!=='ALLOW')return{policy:pre,state,trace:{trigger:trigger.id,priority:trigger.priority,workflow:workflow.id,workflowState:workflowState(state,command.action,pre.decision),agent:agent.id,preGuard:pre.decision,postGuard:pre.decision,events:[]}};
  if(command.requestId&&state.processedRequestIds.includes(command.requestId))return{policy:{decision:'ALLOW',reason:'This request was already processed. No duplicate mutation was created.'},state,duplicate:true,trace:{trigger:trigger.id,priority:trigger.priority,workflow:workflow.id,workflowState:'COMPLETED',agent:agent.id,preGuard:'ALLOW',postGuard:'ALLOW',events:[]}};
  const events=apply(state,command,now);
+ const existing=state.workflowInstances.find(x=>x.workflow===workflow.id);
+ const wfState=workflowState(state,command.action,'ALLOW');
+ if(existing){existing.state=wfState;existing.owner=agent.id;existing.updatedAt=now;existing.lastEvent=events[0]?.type;}
+ else state.workflowInstances.push({id:randomUUID(),workflow:workflow.id,state:wfState,owner:agent.id,updatedAt:now,lastEvent:events[0]?.type});
  if(command.requestId){state.processedRequestIds.push(command.requestId);if(state.processedRequestIds.length>300)state.processedRequestIds.shift();}
  for(const event of events){state.events.unshift({id:randomUUID(),type:event.type,at:now,actor:command.role,subjectId:event.subjectId,metadata:event.metadata});}
  if(state.events.length>500)state.events.length=500;
