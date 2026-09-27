@@ -189,3 +189,29 @@ textarea { resize: vertical; min-height: 90px; }
   .tag { font-size: 9px; }
   input:not([type=checkbox]), select, textarea { font-size: 16px; }
 }
+
+.driveRule { border: 1px solid #405065; color: var(--muted-on-dark); padding: 13px 18px; margin: -20px 0 34px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.checkList { display: grid; }
+.checkItem { display: flex; align-items: center; justify-content: space-between; gap: 18px; border-bottom: 1px solid var(--line); padding: 17px 0; }
+.checkItem:first-child { padding-top: 0; }
+.checkItem:last-child { border-bottom: 0; }
+.checkItem strong { font-size: 14px; }
+.checkItem p { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 6px 0 0; }
+.checkItem button { border: 1px solid var(--ink); background: var(--surface); border-radius: var(--button-radius); padding: 9px 12px; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.checkItem button:not(:disabled):hover { background: var(--ink); color: var(--on-dark); }
+.passportGrid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.passportCard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 27px; }
+.passportCard h2 { font-size: 24px; letter-spacing: -.04em; margin: 22px 0 10px; }
+.passportCard p { color: var(--muted); line-height: 1.55; margin: 0; }
+.passportStatus { display: inline-block; font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; padding: 7px 9px; border: 1px solid var(--line); }
+.passportStatus.evidence_present { background: var(--lime); border-color: var(--lime); }
+.passportStatus.building { background: var(--lime-soft); }
+.nextSafe { margin-top: 22px; background: var(--dark-surface); color: var(--on-dark); border-radius: var(--radius); padding: 28px; }
+.nextSafe span { color: var(--lime); font-size: 10px; font-weight: 800; letter-spacing: .16em; }
+.nextSafe strong { display: block; font-size: clamp(26px,3vw,42px); letter-spacing: -.045em; margin: 16px 0 10px; }
+.nextSafe p { color: var(--muted-on-dark); margin: 0; line-height: 1.55; }
+.reflectionCard { margin-top: 25px; }
+@media(max-width:700px) {
+ .passportGrid { grid-template-columns: 1fr; }
+ .checkItem { align-items: flex-start; }
+}
