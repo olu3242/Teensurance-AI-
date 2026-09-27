@@ -19,7 +19,8 @@ export default function Page(){
  const [form,setForm]=useState({date:today(),minutes:45,night:false,skill:'Quiet streets',supervisor:'',note:''});
  const [plan,setPlan]=useState({skill:'Quiet streets',objective:'Practice smooth scanning and calm decision-making',supervisor:''});
  const [reflection,setReflection]=useState<{logId:string;confidence:Confidence;challenge:string;nextFocus:string}>({logId:'',confidence:'building',challenge:'',nextFocus:''});
- const [goal,setGoal]=useState(20);\n const [nextAction,setNextAction]=useState<{agent:string;title:string;why:string;action:string}|null>(null);
+ const [goal,setGoal]=useState(20);
+ const [nextAction,setNextAction]=useState<{agent:string;title:string;why:string;action:string}|null>(null);
  const p=useMemo(()=>calculate(state),[state]);
  const passport=useMemo(()=>readinessPassport(state),[state]);
 
@@ -34,7 +35,8 @@ export default function Page(){
  useEffect(()=>{
   fetch('/api/pilot',{cache:'no-store'}).then(r=>r.json()).then((d:ResponseData)=>{
     setState(d.state);setGoal(d.state.goalHours);
-    if(d.state.activePlan)setPlan({skill:d.state.activePlan.skill,objective:d.state.activePlan.objective,supervisor:d.state.activePlan.supervisor});\n    if(d.os?.journey?.nextBestStep)setNextAction(d.os.journey.nextBestStep);
+    if(d.state.activePlan)setPlan({skill:d.state.activePlan.skill,objective:d.state.activePlan.objective,supervisor:d.state.activePlan.supervisor});
+    if(d.os?.journey?.nextBestStep)setNextAction(d.os.journey.nextBestStep);
   }).catch(()=>setMessage('Could not load the pilot. Refresh to try again.')).finally(()=>setLoading(false));
  },[]);
 
@@ -43,7 +45,8 @@ export default function Page(){
   try{
    const response=await fetch('/api/pilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,role,drivingState:driving})});
    const data:ResponseData=await response.json();
-   if(data.state)setState(data.state);\n   if(data.os?.journey?.nextBestStep)setNextAction(data.os.journey.nextBestStep);
+   if(data.state)setState(data.state);
+   if(data.os?.journey?.nextBestStep)setNextAction(data.os.journey.nextBestStep);
    if(!response.ok){setMessage(data.policy?.reason||data.error||'Could not save. Try again.');return false}
    setMessage(data.policy?.reason||'Saved.');return true;
   }catch{setMessage('Connection problem. Please try again.');return false}
@@ -84,6 +87,8 @@ export default function Page(){
   <main className="main">
    <header className="topbar"><span>FAMILY PILOT <span className="slash">/</span> {tab.replace('_',' ')}</span><div className="roleSwitch" aria-label="Pilot role"><button className={role==='teen'?'chosen':''} onClick={()=>setRole('teen')}>Teen view</button><button className={role==='parent'?'chosen':''} onClick={()=>setRole('parent')}>Parent view</button></div></header>
    {loading?<div className="loading">Loading your journey…</div>:<>
+    {!state.consent[role==='teen'?'teenAcknowledged':'guardianAcknowledged']&&<section className="nextSafe"><span>VIBE / PILOT SETUP</span><strong>Review the pilot data purpose</strong><p>This local MVP records practice, safety checks and family review evidence. It is not production consent or identity verification.</p><button className="primary" disabled={busy} onClick={()=>act({action:role==='teen'?'consent_teen':'consent_guardian'})}>Acknowledge for this pilot <span>→</span></button></section>}
+    {role==='parent'&&state.consent.guardianAcknowledged&&state.guardian.relationshipStatus!=='verified'&&<section className="nextSafe"><span>VIBE / GUARDIAN SETUP</span><strong>Confirm your pilot role</strong><p>This is a local-pilot attestation only. Production requires authenticated guardian identity and relationship verification.</p><button className="primary" disabled={busy} onClick={()=>act({action:'guardian'})}>Confirm pilot guardian role <span>→</span></button></section>}
     {message&&<div role="status" className="message">{message}<button aria-label="Dismiss notice" onClick={()=>setMessage('')}>×</button></div>}
     {tab==='journey'&&<>
      {nextAction&&<section className="nextSafe"><span>{nextAction.agent} / NEXT BEST STEP</span><strong>{nextAction.title}</strong><p>{nextAction.why}</p><button className="primary" onClick={()=>setTab(nextAction.action as Tab)}>Continue safely <span>→</span></button></section>}
