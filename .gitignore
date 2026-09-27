@@ -1,6 +1,11 @@
 node_modules
 .next
 data/*.json
+data/*.sqlite*
+.next-cert/
+.next-cert-build/
+test-results/
+playwright-report/
 *.tsbuildinfo
 *.zip
 upload/
