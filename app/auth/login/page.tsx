@@ -1,6 +1,8 @@
 'use client';
 import {useState} from 'react';
 import Link from 'next/link';
+import {BrandLogo} from '@/components/BrandLogo';
+import {HelpChat} from '@/components/HelpChat';
 import {createClient} from '@/lib/supabase/client';
 import {supabaseConfigured} from '@/lib/supabase/config';
 
@@ -14,5 +16,5 @@ export default function LoginPage(){
   const {error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo}});
   if(error){setError(error.message);setBusy(false)}
  }
- return <main className="authPage"><Link href="/">← Teensurance</Link><section><span>FAMILY ACCESS</span><h1>Continue your driving journey.</h1><p>Sign in before joining or managing a family. Teensurance never uses Google profile metadata as an authorization role.</p><button onClick={google} disabled={busy}>{busy?'Connecting…':'Continue with Google'}</button>{error&&<p role="alert">{error}</p>}<small>Google OAuth must be enabled in the dedicated Teensurance Supabase project before this button can complete sign-in.</small></section></main>
+ return <main className="authPage"><BrandLogo /><section><span>FAMILY ACCESS</span><h1>Continue your driving journey.</h1><p>Sign in before joining or managing a family. Teensurance never uses Google profile metadata as an authorization role.</p><button onClick={google} disabled={busy}>{busy?'Connecting…':'Continue with Google'}</button>{error&&<p role="alert">{error}</p>}<small>Google OAuth must be enabled in the dedicated Teensurance Supabase project before this button can complete sign-in.</small></section><HelpChat context="auth" /></main>
 }
