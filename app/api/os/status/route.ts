@@ -3,14 +3,12 @@ import {agentRegistry,buildContext,operationalInbox,triggerRegistry,workflowRegi
 import {readState} from '@/lib/store';
 export const runtime='nodejs';export const dynamic='force-dynamic';
 export async function GET(){
- const state=await readState();
+ const state=await readState();const inbox=operationalInbox(state);
  return NextResponse.json({
-  architecture:{name:'Teensurance Workflow OS',version:'1.0.0-mvp',principle:'GUARD mediates every state-changing command; agents never mutate state directly.'},
-  context:buildContext(state),\n  operations:operationalInbox(state),
-  registries:{
-   workflows:workflowRegistry.map(w=>({id:w.id,version:w.version,owner:w.owner,allowedActions:w.allowedActions})),
-   triggers:triggerRegistry.map(t=>({id:t.id,priority:t.priority,source:t.source,workflow:t.workflow,agent:t.agent})),
-   agents:agentRegistry
-  }
+  architecture:{name:'Teensurance Workflow OS',version:'1.1.0-mvp',principle:'GUARD mediates every state-changing command; agents never mutate state directly.'},
+  context:buildContext(state),operations:inbox,
+  counts:{events:state.events.length,audits:state.audit.length,openReviews:inbox.openReviews.length,openExceptions:inbox.openExceptions.length,pendingSources:inbox.pendingSources.length,workflowInstances:state.workflowInstances.length},
+  workflows:state.workflowInstances,recentEvents:state.events.slice(-20).reverse(),inbox,
+  registries:{workflows:workflowRegistry.map(w=>({id:w.id,version:w.version,owner:w.owner,allowedActions:w.allowedActions})),triggers:triggerRegistry.map(t=>({id:t.id,priority:t.priority,source:t.source,workflow:t.workflow,agent:t.agent})),agents:agentRegistry}
  },{headers:{'Cache-Control':'no-store'}});
 }

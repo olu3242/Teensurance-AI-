@@ -13,6 +13,7 @@ export function SiteHeader() {
       <Link href="/auth/login?next=%2Fpilot" onClick={close}>For teens</Link>
       <Link href="/auth/login?next=%2Fpilot%3Frole%3Dparent%26tab%3Dfamily" onClick={close}>For parents</Link>
       <Link href="/#how-it-works" onClick={close}>How it works</Link>
+      <Link href="/learn" onClick={close}>Driving lessons</Link>
       <Link href="/#faq" onClick={close}>FAQ</Link>
     </nav>
     <div className="siteActions">
