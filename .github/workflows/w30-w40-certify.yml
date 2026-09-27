@@ -1,10 +1,10 @@
-name: W30-W40 Certification
+name: MVP Certification
 
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [w30-w40-safety-readiness]
+    branches: [w30-w40-safety-readiness, w40-w50-mvp]
 
 permissions:
   contents: read
