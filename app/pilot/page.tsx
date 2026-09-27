@@ -1,5 +1,8 @@
 'use client';
 import {useEffect,useMemo,useState} from 'react';
+import {BrandLoader} from '@/components/BrandLoader';
+import {HelpChat} from '@/components/HelpChat';
+import {BrandLogo} from '@/components/BrandLogo';
 import {safetyTopics,steps,type Confidence,type DrivingState,type Role,type State,initialState,progress as calculate,readinessPassport} from '@/lib/domain';
 
 type ResponseData={state:State;progress?:ReturnType<typeof calculate>;passport?:ReturnType<typeof readinessPassport>;policy?:{decision:string;reason:string};error?:string;os?:{journey:{nextBestStep:{agent:string;title:string;why:string;action:string}}}};
@@ -73,7 +76,7 @@ export default function Page(){
 
  return <div className="appShell">
   <aside className="sidebar">
-   <div className="brand"><span className="brandMark">T<span>•</span></span><span>teensurance<small>SAFETY BEFORE SPEED</small></span></div>
+   <BrandLogo inverse />
    <div className="navLabel">YOUR SPACE</div>
    <nav aria-label="Main navigation">
     <button className={tab==='journey'?'active':''} onClick={()=>setTab('journey')}><span>◫</span> Journey</button>
@@ -86,7 +89,7 @@ export default function Page(){
   </aside>
   <main className="main">
    <header className="topbar"><span>FAMILY PILOT <span className="slash">/</span> {tab.replace('_',' ')}</span><div className="roleSwitch" aria-label="Pilot role"><button className={role==='teen'?'chosen':''} onClick={()=>setRole('teen')}>Teen view</button><button className={role==='parent'?'chosen':''} onClick={()=>setRole('parent')}>Parent view</button></div></header>
-   {loading?<div className="loading">Loading your journey…</div>:<>
+   {loading?<BrandLoader label="Loading your journey" />:<>
     {!state.consent[role==='teen'?'teenAcknowledged':'guardianAcknowledged']&&<section className="nextSafe"><span>VIBE / PILOT SETUP</span><strong>Review the pilot data purpose</strong><p>This local MVP records practice, safety checks and family review evidence. It is not production consent or identity verification.</p><button className="primary" disabled={busy} onClick={()=>act({action:role==='teen'?'consent_teen':'consent_guardian'})}>Acknowledge for this pilot <span>→</span></button></section>}
     {role==='parent'&&state.consent.guardianAcknowledged&&state.guardian.relationshipStatus!=='verified'&&<section className="nextSafe"><span>VIBE / GUARDIAN SETUP</span><strong>Confirm your pilot role</strong><p>This is a local-pilot attestation only. Production requires authenticated guardian identity and relationship verification.</p><button className="primary" disabled={busy} onClick={()=>act({action:'guardian'})}>Confirm pilot guardian role <span>→</span></button></section>}
     {message&&<div role="status" className="message">{message}<button aria-label="Dismiss notice" onClick={()=>setMessage('')}>×</button></div>}
@@ -106,5 +109,6 @@ export default function Page(){
      </div>}
    </>}
   </main>
+  {driving!=='driving'&&<HelpChat context={tab} />}
  </div>;
 }
