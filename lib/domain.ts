@@ -7,7 +7,7 @@ export type Confidence = 'building'|'steady'|'confident';
 export type LogStatus = 'pending'|'verified'|'disputed';
 export type Log = {
   id:string; date:string; minutes:number; night:boolean; skill:string; supervisor:string; note:string;
-  status:LogStatus; createdAt:string; verifiedAt?:string; disputedAt?:string;
+  status:LogStatus; createdAt:string; verifiedAt?:string; disputedAt?:string; reviewedBy?:Role; disputeReason?:string;
 };
 export type Audit = {id:string;at:string;action:string;actor:Role;drivingState:DrivingState;decision:Decision;reason:string};
 export type PracticePlan = {id:string;skill:string;objective:string;supervisor:string;createdAt:string;completedAt?:string};
@@ -34,7 +34,7 @@ export type State = {
 
 export const initialState = ():State => ({
   logs:[],audit:[],goalHours:20,safetyChecks:[],reflections:[],corrections:[],evidence:[],
-  cover:{householdReviewed:false,vehicleInfoReady:false,questionsPrepared:false},processedRequestIds:[]
+  cover:{householdReviewed:false,vehicleInfoReady:false,questionsPrepared:false},processedRequestIds:[],events:[]
 });
 
 export function normalizeState(value:Partial<State>|undefined|null):State {
@@ -50,7 +50,7 @@ export function normalizeState(value:Partial<State>|undefined|null):State {
     corrections:Array.isArray(value.corrections)?value.corrections:base.corrections,
     evidence:Array.isArray(value.evidence)?value.evidence:base.evidence,
     cover:value.cover&&typeof value.cover==='object'?{...base.cover,...value.cover}:base.cover,
-    processedRequestIds:Array.isArray(value.processedRequestIds)?value.processedRequestIds:base.processedRequestIds
+    processedRequestIds:Array.isArray(value.processedRequestIds)?value.processedRequestIds:base.processedRequestIds,\n    events:Array.isArray(value.events)?value.events:base.events,\n    jurisdiction:value.jurisdiction
   };
 }
 
@@ -111,6 +111,11 @@ export function guard(action:string, role:Role, drivingState:DrivingState, state
     if (!state.logs.some(l=>l.id===payload.id && l.status==='pending')) return {decision:'DENY',reason:'Only a pending entry can be disputed.'};
     if (!payload.reason) return {decision:'REQUIRE_VERIFICATION',reason:'A dispute reason is required.'};
     return {decision:'ALLOW',reason:'Entry disputed and excluded from verified progress.'};
+  }
+  if (action === 'jurisdiction') {
+    if (!payload.name) return {decision:'REQUIRE_OFFICIAL_SOURCE',reason:'Choose a jurisdiction before reviewing official requirements.'};
+    if (payload.officialSourceUrl) return {decision:'REQUIRE_OFFICIAL_SOURCE',reason:'This MVP cannot self-verify a regulatory source. Human review is required before requirements become authoritative.'};
+    return {decision:'ALLOW',reason:'Jurisdiction recorded as unverified. No legal eligibility decision will be made.'};
   }
   if (action === 'cover') return {decision:'ALLOW',reason:'Insurance-preparation checklist updated. No quote, price, eligibility, or binding decision was made.'};
   if (action === 'goal') return role === 'parent' ? {decision:'ALLOW',reason:'Family practice goal updated.'} : {decision:'REQUIRE_PARENT',reason:'A parent sets the family practice goal.'};
@@ -200,3 +205,6 @@ export function engagementPolicy(mechanic:string):{decision:'ALLOW'|'DENY';reaso
   if (prohibitedMechanics.has(mechanic)) return {decision:'DENY',reason:'Teensurance does not use engagement mechanics that can reward more, faster, competitive, or distracted driving.'};
   return {decision:'ALLOW',reason:'Mechanic does not conflict with the current safety deny-list.'};
 }
+
+
+export const coverStatus = coverReadiness;
