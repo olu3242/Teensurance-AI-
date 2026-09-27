@@ -1,6 +1,10 @@
 import type {TriggerDefinition} from './types';
 
 export const triggerRegistry:TriggerDefinition[]=[
+ {id:'consent.missing',priority:'P1',source:'state',workflow:'onboarding',agent:'GUARD',condition:(s,c)=>['plan','safety','log','reflect'].includes(c.action)&&!s.consent.teenAcknowledged},
+ {id:'guardian.setup.requested',priority:'P1',source:'user',workflow:'onboarding',agent:'VIBE',condition:(_s,c)=>['consent_teen','consent_guardian','guardian'].includes(c.action)},
+ {id:'requirement.source.submitted',priority:'P2',source:'external',workflow:'permit',agent:'READY',condition:(_s,c)=>c.action==='requirement_source'},
+ {id:'ops.review.requested',priority:'P3',source:'user',workflow:'coverage',agent:'GUARD',condition:(_s,c)=>['resolve_review','resolve_exception'].includes(c.action)},
  {id:'driving.interaction.requested',priority:'P0',source:'safety',workflow:'practice',agent:'GUARD',condition:(_s,c)=>c.drivingState==='driving'},
  {id:'requirement.unverified',priority:'P2',source:'state',workflow:'licensing',agent:'GO',condition:(s,c)=>c.action==='jurisdiction'&&s.jurisdiction?.status!=='verified'},
  {id:'practice.plan.requested',priority:'P4',source:'user',workflow:'practice',agent:'CRUZE',condition:(_s,c)=>c.action==='plan'},
