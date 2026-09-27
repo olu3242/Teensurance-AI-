@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {engagementPolicy,guard,initialState,normalizeState,progress,readinessPassport,type State} from './domain';
+import {coverStatus,engagementPolicy,guard,initialState,nextBestStep,normalizeState,pilotAnalytics,progress,readinessPassport,type State} from './domain';
 
 describe('GUARD and supervised progress',()=>{
  it('defers every action while driving',()=>{
@@ -58,5 +58,51 @@ describe('Safety & Readiness Passport',()=>{
 describe('safety-by-design engagement policy',()=>{
  it.each(['speed_score','miles_competition','drive_count_streak','leaderboard','trip_count_reward','in_drive_prompt'])('denies %s',mechanic=>{
    expect(engagementPolicy(mechanic).decision).toBe('DENY');
+ });
+});
+
+
+describe('W40-W50 MVP workflow',()=>{
+ it('routes next-best-step without inventing jurisdiction requirements',()=>{
+  const state=initialState();
+  expect(nextBestStep(state).id).toBe('safe_setup');
+  state.safetyChecks.push(
+   {topic:'phone_away',completedBy:'teen',completedAt:'x'},
+   {topic:'seatbelt_setup',completedBy:'teen',completedAt:'x'},
+   {topic:'mirrors_controls',completedBy:'teen',completedAt:'x'}
+  );
+  expect(nextBestStep(state).id).toBe('plan');
+  state.activePlan={id:'p',skill:'Turns',objective:'Scan',supervisor:'Adult',createdAt:'x'};
+  expect(nextBestStep(state).id).toBe('practice');
+ });
+ it('requires parent role for correction/dispute and removes disputed time from progress',()=>{
+  const state=initialState();
+  state.logs.push({id:'entry',date:'2026-09-01',minutes:60,night:false,skill:'Turns',supervisor:'Adult',note:'',status:'verified',createdAt:'x'});
+  expect(guard('correct','teen','parked',state,{id:'entry',minutes:45,reason:'Fix'}).decision).toBe('REQUIRE_PARENT');
+  expect(guard('dispute','parent','parked',state,{id:'entry',reason:'Could not confirm'}).decision).toBe('ALLOW');
+  state.logs[0].status='disputed';
+  expect(progress(state).verifiedMinutes).toBe(0);
+ });
+ it('keeps jurisdiction unverified without an official source',()=>{
+  const state=initialState();
+  expect(guard('jurisdiction','parent','parked',state,{name:'Example',officialSourceUrl:''}).decision).toBe('ALLOW');
+  expect(guard('jurisdiction','parent','parked',state,{name:'Example',officialSourceUrl:'https://example.com'}).decision).toBe('REQUIRE_OFFICIAL_SOURCE');
+ });
+ it('activates COVER only as an educational handoff after evidence is present',()=>{
+  const state=initialState();
+  expect(coverStatus(state).active).toBe(false);
+  state.logs.push({id:'entry',date:'2026-09-01',minutes:60,night:false,skill:'Turns',supervisor:'Adult',note:'',status:'verified',createdAt:'x'});
+  state.safetyChecks.push(
+   {topic:'phone_away',completedBy:'teen',completedAt:'x'},
+   {topic:'seatbelt_setup',completedBy:'teen',completedAt:'x'},
+   {topic:'mirrors_controls',completedBy:'teen',completedAt:'x'}
+  );
+  expect(coverStatus(state)).toMatchObject({active:true,quoteEnabled:false});
+ });
+ it('reports aggregate pilot analytics without ranking',()=>{
+  const metrics=pilotAnalytics(initialState());
+  expect(metrics).toHaveProperty('guardDeferrals');
+  expect(metrics).not.toHaveProperty('rank');
+  expect(metrics).not.toHaveProperty('score');
  });
 });
