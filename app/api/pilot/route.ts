@@ -14,6 +14,12 @@ const input=z.discriminatedUnion('action',[
  z.object({action:z.literal('correct'),...common,id:z.string().uuid(),minutes:z.number().int().min(1).max(240),reason:z.string().trim().min(3).max(180)}),
  z.object({action:z.literal('dispute'),...common,id:z.string().uuid(),reason:z.string().trim().min(3).max(180)}),
  z.object({action:z.literal('jurisdiction'),...common,name:z.string().trim().min(2).max(80),officialSourceUrl:z.string().url().optional()}),
+ z.object({action:z.literal('consent_teen'),role:z.literal('teen'),drivingState:z.enum(['parked','driving']),requestId:z.string().uuid().optional()}),
+ z.object({action:z.literal('consent_guardian'),role:z.literal('parent'),drivingState:z.enum(['parked','driving']),requestId:z.string().uuid().optional()}),
+ z.object({action:z.literal('guardian'),role:z.literal('parent'),drivingState:z.enum(['parked','driving']),requestId:z.string().uuid().optional()}),
+ z.object({action:z.literal('requirement_source'),role:z.literal('parent'),drivingState:z.enum(['parked','driving']),requestId:z.string().uuid().optional(),jurisdiction:z.string().trim().min(2).max(80),url:z.string().url(),title:z.string().trim().min(3).max(120)}),
+ z.object({action:z.literal('resolve_review'),role:z.literal('parent'),drivingState:z.enum(['parked','driving']),requestId:z.string().uuid().optional(),id:z.string().uuid()}),
+ z.object({action:z.literal('resolve_exception'),role:z.literal('parent'),drivingState:z.enum(['parked','driving']),requestId:z.string().uuid().optional(),id:z.string().uuid()}),
  z.object({action:z.literal('cover'),...common,item:z.enum(['householdReviewed','vehicleInfoReady','questionsPrepared']),complete:z.boolean()}),
  z.object({action:z.literal('goal'),...common,hours:z.number().int().min(1).max(200)})
 ]);

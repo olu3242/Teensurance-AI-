@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [w30-w40-safety-readiness, w40-w50-mvp, w51-w60-workflow-os]
+    branches: [w30-w40-safety-readiness, w40-w50-mvp, w51-w60-workflow-os, w61-w70-mvp-ops]
 
 permissions:
   contents: read
