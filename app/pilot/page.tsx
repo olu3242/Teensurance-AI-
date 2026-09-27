@@ -2,7 +2,7 @@
 import {useEffect,useMemo,useState} from 'react';
 import {safetyTopics,steps,type Confidence,type DrivingState,type Role,type State,initialState,progress as calculate,readinessPassport} from '@/lib/domain';
 
-type ResponseData={state:State;progress:ReturnType<typeof calculate>;passport?:ReturnType<typeof readinessPassport>;policy?:{decision:string;reason:string};error?:string};
+type ResponseData={state:State;progress?:ReturnType<typeof calculate>;passport?:ReturnType<typeof readinessPassport>;policy?:{decision:string;reason:string};error?:string;os?:{journey:{nextBestStep:{agent:string;title:string;why:string;action:string}}}};
 type Tab='journey'|'prepare'|'log'|'passport'|'family';
 const today=()=>new Date().toLocaleDateString('en-CA');
 const statusLabel={not_started:'Not started',building:'Building',evidence_present:'Evidence present'} as const;
@@ -19,7 +19,7 @@ export default function Page(){
  const [form,setForm]=useState({date:today(),minutes:45,night:false,skill:'Quiet streets',supervisor:'',note:''});
  const [plan,setPlan]=useState({skill:'Quiet streets',objective:'Practice smooth scanning and calm decision-making',supervisor:''});
  const [reflection,setReflection]=useState<{logId:string;confidence:Confidence;challenge:string;nextFocus:string}>({logId:'',confidence:'building',challenge:'',nextFocus:''});
- const [goal,setGoal]=useState(20);
+ const [goal,setGoal]=useState(20);\n const [nextAction,setNextAction]=useState<{agent:string;title:string;why:string;action:string}|null>(null);
  const p=useMemo(()=>calculate(state),[state]);
  const passport=useMemo(()=>readinessPassport(state),[state]);
 
@@ -34,7 +34,7 @@ export default function Page(){
  useEffect(()=>{
   fetch('/api/pilot',{cache:'no-store'}).then(r=>r.json()).then((d:ResponseData)=>{
     setState(d.state);setGoal(d.state.goalHours);
-    if(d.state.activePlan)setPlan({skill:d.state.activePlan.skill,objective:d.state.activePlan.objective,supervisor:d.state.activePlan.supervisor});
+    if(d.state.activePlan)setPlan({skill:d.state.activePlan.skill,objective:d.state.activePlan.objective,supervisor:d.state.activePlan.supervisor});\n    if(d.os?.journey?.nextBestStep)setNextAction(d.os.journey.nextBestStep);
   }).catch(()=>setMessage('Could not load the pilot. Refresh to try again.')).finally(()=>setLoading(false));
  },[]);
 
@@ -43,7 +43,7 @@ export default function Page(){
   try{
    const response=await fetch('/api/pilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,role,drivingState:driving})});
    const data:ResponseData=await response.json();
-   if(data.state)setState(data.state);
+   if(data.state)setState(data.state);\n   if(data.os?.journey?.nextBestStep)setNextAction(data.os.journey.nextBestStep);
    if(!response.ok){setMessage(data.policy?.reason||data.error||'Could not save. Try again.');return false}
    setMessage(data.policy?.reason||'Saved.');return true;
   }catch{setMessage('Connection problem. Please try again.');return false}
@@ -86,7 +86,8 @@ export default function Page(){
    {loading?<div className="loading">Loading your journey…</div>:<>
     {message&&<div role="status" className="message">{message}<button aria-label="Dismiss notice" onClick={()=>setMessage('')}>×</button></div>}
     {tab==='journey'&&<>
-     <section className="intro"><div><div className="eyebrow">YOUR ROADMAP <span>SAFETY-BY-DESIGN</span></div><h1>Earn independence.<br/><em>Build readiness.</em></h1><p>Progress means preparation, verified practice and reflection — never driving more just to keep a streak alive.</p></div><div className="introAside"><span>READINESS EVIDENCE</span><strong>{passport.evidencePresent}<small> / {passport.evidenceTotal}</small></strong><div className="bar"><i style={{width:`${passport.evidencePresent/passport.evidenceTotal*100}%`}}/></div><small>Evidence summary only · Not a licensing or insurance score</small></div></section>
+     {nextAction&&<section className="nextSafe"><span>{nextAction.agent} / NEXT BEST STEP</span><strong>{nextAction.title}</strong><p>{nextAction.why}</p><button className="primary" onClick={()=>setTab(nextAction.action as Tab)}>Continue safely <span>→</span></button></section>}
+     <section className="intro"><div><div className="eyebrow">YOUR ROADMAP <span>WORKFLOW OS · SAFETY-BY-DESIGN</span></div><h1>Earn independence.<br/><em>Build readiness.</em></h1><p>Progress means preparation, verified practice and reflection — never driving more just to keep a streak alive.</p></div><div className="introAside"><span>READINESS EVIDENCE</span><strong>{passport.evidencePresent}<small> / {passport.evidenceTotal}</small></strong><div className="bar"><i style={{width:`${passport.evidencePresent/passport.evidenceTotal*100}%`}}/></div><small>Evidence summary only · Not a licensing or insurance score</small></div></section>
      <div className="contentGrid"><section><div className="sectionHead"><h2>The journey</h2><span>Choose a step to see the direction</span></div><div className="steps">{steps.map((s,i)=><button key={s.id} className={`step ${selected===i?'selected':''}`} onClick={()=>setSelected(i)}><span className="stepNum">0{i+1}</span><span className="stepTitle">{s.name}<small>{s.agent} · {i<2?'Get ready':i===2?'Build experience':'Plan ahead'}</small></span><span className="arrow">↗</span></button>)}</div></section><section className="detail" aria-live="polite"><div className="detailTop"><span>STEP 0{selected+1}</span><span className="agent">{steps[selected].agent}</span></div><h2>{steps[selected].name}</h2><p>{steps[selected].detail}</p><div className="detailDivider"/><h3>What counts as complete</h3><p>{steps[selected].proof}</p><div className="sourceNotice">Requirements vary by location. Confirm permit, hour, test and insurance rules with official sources before making decisions.</div>{selected===2&&<button className="primary" onClick={()=>setTab('prepare')}>Prepare the next drive <span>→</span></button>}</section></div>
     </>}
     {tab==='prepare'&&<div className="workspace"><div className="pageTitle"><div className="eyebrow">CRUZE / BEFORE THE DRIVE</div><h1>Prepare. Then put the phone away.</h1><p>Choose one practice objective while parked. Safety checks are evidence of preparation, not points or rewards.</p></div><div className="formGrid">

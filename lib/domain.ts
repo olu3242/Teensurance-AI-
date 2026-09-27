@@ -7,7 +7,7 @@ export type Confidence = 'building'|'steady'|'confident';
 export type LogStatus = 'pending'|'verified'|'disputed';
 export type Log = {
   id:string; date:string; minutes:number; night:boolean; skill:string; supervisor:string; note:string;
-  status:LogStatus; createdAt:string; verifiedAt?:string; disputedAt?:string;
+  status:LogStatus; createdAt:string; verifiedAt?:string; disputedAt?:string; reviewedBy?:Role; disputeReason?:string;
 };
 export type Audit = {id:string;at:string;action:string;actor:Role;drivingState:DrivingState;decision:Decision;reason:string};
 export type PracticePlan = {id:string;skill:string;objective:string;supervisor:string;createdAt:string;completedAt?:string};
@@ -34,7 +34,7 @@ export type State = {
 
 export const initialState = ():State => ({
   logs:[],audit:[],goalHours:20,safetyChecks:[],reflections:[],corrections:[],evidence:[],
-  cover:{householdReviewed:false,vehicleInfoReady:false,questionsPrepared:false},processedRequestIds:[]
+  cover:{householdReviewed:false,vehicleInfoReady:false,questionsPrepared:false},processedRequestIds:[],events:[]
 });
 
 export function normalizeState(value:Partial<State>|undefined|null):State {
@@ -50,7 +50,7 @@ export function normalizeState(value:Partial<State>|undefined|null):State {
     corrections:Array.isArray(value.corrections)?value.corrections:base.corrections,
     evidence:Array.isArray(value.evidence)?value.evidence:base.evidence,
     cover:value.cover&&typeof value.cover==='object'?{...base.cover,...value.cover}:base.cover,
-    processedRequestIds:Array.isArray(value.processedRequestIds)?value.processedRequestIds:base.processedRequestIds
+    processedRequestIds:Array.isArray(value.processedRequestIds)?value.processedRequestIds:base.processedRequestIds,\n    events:Array.isArray(value.events)?value.events:base.events,\n    jurisdiction:value.jurisdiction
   };
 }
 
@@ -112,6 +112,11 @@ export function guard(action:string, role:Role, drivingState:DrivingState, state
     if (!payload.reason) return {decision:'REQUIRE_VERIFICATION',reason:'A dispute reason is required.'};
     return {decision:'ALLOW',reason:'Entry disputed and excluded from verified progress.'};
   }
+  if (action === 'jurisdiction') {
+    if (!payload.name) return {decision:'REQUIRE_OFFICIAL_SOURCE',reason:'Choose a jurisdiction before reviewing official requirements.'};
+    if (payload.officialSourceUrl) return {decision:'REQUIRE_OFFICIAL_SOURCE',reason:'This MVP cannot self-verify a regulatory source. Human review is required before requirements become authoritative.'};
+    return {decision:'ALLOW',reason:'Jurisdiction recorded as unverified. No legal eligibility decision will be made.'};
+  }
   if (action === 'cover') return {decision:'ALLOW',reason:'Insurance-preparation checklist updated. No quote, price, eligibility, or binding decision was made.'};
   if (action === 'goal') return role === 'parent' ? {decision:'ALLOW',reason:'Family practice goal updated.'} : {decision:'REQUIRE_PARENT',reason:'A parent sets the family practice goal.'};
   return {decision:'DENY',reason:'Unknown action.'};
@@ -143,8 +148,8 @@ export function readinessPassport(state:State) {
 
 export function nextBestStep(state:State) {
   if (state.safetyChecks.filter(x=>teenSafetyTopics.has(x.topic)).length<3) return {agent:'CRUZE',id:'safe_setup',title:'Complete your parked safety setup',why:'Preparation should happen before the vehicle moves.',action:'prepare'} as const;
-  if (!state.activePlan) return {agent:'CRUZE',id:'practice_plan',title:'Make one simple practice plan',why:'Choose one skill, one objective and one supervisor while parked.',action:'prepare'} as const;
-  if (state.logs.length===0) return {agent:'MILES',id:'first_log',title:'Log your supervised practice after parking',why:'The family needs a reviewable record before practice can count.',action:'log'} as const;
+  if (!state.activePlan) return {agent:'CRUZE',id:'plan',title:'Make one simple practice plan',why:'Choose one skill, one objective and one supervisor while parked.',action:'prepare'} as const;
+  if (state.logs.length===0) return {agent:'MILES',id:'practice',title:'Log your supervised practice after parking',why:'The family needs a reviewable record before practice can count.',action:'log'} as const;
   if (state.logs.some(x=>x.status==='pending')) return {agent:'MILES',id:'parent_review',title:'Ask a parent to review the pending drive',why:'Pending time does not count toward verified practice.',action:'family'} as const;
   const verified=state.logs.filter(x=>x.status==='verified');
   if (verified.some(log=>!state.reflections.some(ref=>ref.logId===log.id))) return {agent:'CRUZE',id:'reflection',title:'Reflect on the last verified drive',why:'Reflection turns practice into a clearer next focus.',action:'family'} as const;
@@ -199,4 +204,11 @@ const prohibitedMechanics = new Set(['speed_score','miles_competition','drive_co
 export function engagementPolicy(mechanic:string):{decision:'ALLOW'|'DENY';reason:string} {
   if (prohibitedMechanics.has(mechanic)) return {decision:'DENY',reason:'Teensurance does not use engagement mechanics that can reward more, faster, competitive, or distracted driving.'};
   return {decision:'ALLOW',reason:'Mechanic does not conflict with the current safety deny-list.'};
+}
+
+
+export function coverStatus(state:State){
+ const readiness=coverReadiness(state);
+ const active=state.logs.some(x=>x.status==='verified')&&state.safetyChecks.filter(x=>teenSafetyTopics.has(x.topic)).length===3;
+ return {...readiness,active,quoteEnabled:false};
 }

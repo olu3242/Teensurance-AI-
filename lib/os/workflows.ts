@@ -1,0 +1,16 @@
+import type {WorkflowDefinition} from './types';
+
+export const workflowRegistry:WorkflowDefinition[]=[
+ {id:'onboarding',version:1,owner:'VIBE',allowedActions:['jurisdiction'],completion:s=>Boolean(s.jurisdiction),blockers:()=>[]},
+ {id:'permit',version:1,owner:'READY',allowedActions:['jurisdiction'],completion:s=>s.jurisdiction?.status==='verified',blockers:s=>s.jurisdiction?.status==='verified'?[]:['Official-source-backed jurisdiction rules are not verified.']},
+ {id:'learning',version:1,owner:'ACE',allowedActions:[],completion:()=>false,blockers:()=>['Structured learning completion is not implemented in the local pilot.']},
+ {id:'practice',version:1,owner:'CRUZE',allowedActions:['plan','safety','log'],completion:s=>s.logs.length>0,blockers:s=>s.safetyChecks.length<3?['Teen parked safety setup is incomplete.']:[]},
+ {id:'verification',version:1,owner:'MILES',allowedActions:['verify','correct','dispute'],completion:s=>!s.logs.some(l=>l.status==='pending'),blockers:s=>s.logs.some(l=>l.status==='pending')?['A practice entry is awaiting parent review.']:[]},
+ {id:'reflection',version:1,owner:'CRUZE',allowedActions:['reflect'],completion:s=>s.logs.filter(l=>l.status==='verified').every(l=>s.reflections.some(r=>r.logId===l.id)),blockers:()=>[]},
+ {id:'licensing',version:1,owner:'GO',allowedActions:['jurisdiction'],completion:s=>s.jurisdiction?.status==='verified',blockers:s=>s.jurisdiction?.status==='verified'?[]:['Verified official requirements are required before legal-readiness claims.']},
+ {id:'coverage',version:1,owner:'COVER',allowedActions:['cover'],completion:s=>Object.values(s.cover).every(Boolean),blockers:()=>[]}
+];
+
+export function workflowForAction(action:string){
+ return workflowRegistry.find(w=>w.allowedActions.includes(action as never)) ?? workflowRegistry[0];
+}
