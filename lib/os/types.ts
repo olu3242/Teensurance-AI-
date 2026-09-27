@@ -5,7 +5,7 @@ export type WorkflowId='onboarding'|'permit'|'learning'|'practice'|'verification
 export type WorkflowState='CREATED'|'ASSESSING'|'READY'|'IN_PROGRESS'|'AWAITING_EVIDENCE'|'AWAITING_VERIFICATION'|'VERIFIED'|'COMPLETED'|'HANDOFF'|'BLOCKED'|'DEFERRED'|'DISPUTED'|'REQUIRES_PARENT'|'REQUIRES_CONSENT'|'REQUIRES_OFFICIAL_SOURCE'|'REQUIRES_HUMAN_REVIEW'|'CANCELLED';
 export type TriggerPriority='P0'|'P1'|'P2'|'P3'|'P4'|'P5'|'P6'|'P7'|'P8'|'P9';
 
-export type PilotAction='plan'|'safety'|'log'|'reflect'|'verify'|'correct'|'dispute'|'jurisdiction'|'cover'|'goal';
+export type PilotAction='plan'|'safety'|'log'|'reflect'|'verify'|'correct'|'dispute'|'jurisdiction'|'requirement_source'|'consent_teen'|'consent_guardian'|'guardian'|'cover'|'goal'|'resolve_review'|'resolve_exception';
 
 export type OrchestrationCommand={
  action:PilotAction;
