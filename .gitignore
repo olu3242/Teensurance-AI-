@@ -10,3 +10,21 @@ upload/
 .env.*.local
 .vercel/
 coverage/
+
+# Local AI/editor workspace
+.claude/
+
+# Next.js / certification build artifacts
+.next/
+.next-cert/
+.next-cert-build/
+
+# Local runtime state
+data/
+
+# Playwright artifacts
+playwright-report/
+test-results/
+
+# TypeScript
+*.tsbuildinfo
