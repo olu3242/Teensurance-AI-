@@ -148,8 +148,8 @@ export function readinessPassport(state:State) {
 
 export function nextBestStep(state:State) {
   if (state.safetyChecks.filter(x=>teenSafetyTopics.has(x.topic)).length<3) return {agent:'CRUZE',id:'safe_setup',title:'Complete your parked safety setup',why:'Preparation should happen before the vehicle moves.',action:'prepare'} as const;
-  if (!state.activePlan) return {agent:'CRUZE',id:'practice_plan',title:'Make one simple practice plan',why:'Choose one skill, one objective and one supervisor while parked.',action:'prepare'} as const;
-  if (state.logs.length===0) return {agent:'MILES',id:'first_log',title:'Log your supervised practice after parking',why:'The family needs a reviewable record before practice can count.',action:'log'} as const;
+  if (!state.activePlan) return {agent:'CRUZE',id:'plan',title:'Make one simple practice plan',why:'Choose one skill, one objective and one supervisor while parked.',action:'prepare'} as const;
+  if (state.logs.length===0) return {agent:'MILES',id:'practice',title:'Log your supervised practice after parking',why:'The family needs a reviewable record before practice can count.',action:'log'} as const;
   if (state.logs.some(x=>x.status==='pending')) return {agent:'MILES',id:'parent_review',title:'Ask a parent to review the pending drive',why:'Pending time does not count toward verified practice.',action:'family'} as const;
   const verified=state.logs.filter(x=>x.status==='verified');
   if (verified.some(log=>!state.reflections.some(ref=>ref.logId===log.id))) return {agent:'CRUZE',id:'reflection',title:'Reflect on the last verified drive',why:'Reflection turns practice into a clearer next focus.',action:'family'} as const;
@@ -207,4 +207,8 @@ export function engagementPolicy(mechanic:string):{decision:'ALLOW'|'DENY';reaso
 }
 
 
-export const coverStatus = coverReadiness;
+export function coverStatus(state:State){
+ const readiness=coverReadiness(state);
+ const active=state.logs.some(x=>x.status==='verified')&&state.safetyChecks.filter(x=>teenSafetyTopics.has(x.topic)).length===3;
+ return {...readiness,active,quoteEnabled:false};
+}
