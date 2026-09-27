@@ -30,7 +30,7 @@ export default function LandingPage() {
           <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
           <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
         </nav>
-        <div className="landing-account"><Link href="/pilot" className="landing-login">Log In</Link><Link href="/pilot" className="landing-button landing-button-small">Get started <Arrow /></Link></div>
+        <div className="landing-account"><Link href="/join" className="landing-login">Join family</Link><Link href="/auth/login" className="landing-button landing-button-small">Log in <Arrow /></Link></div>
       </header>
       <main id="main">
         <section className="landing-hero" aria-labelledby="hero-heading">
@@ -39,7 +39,7 @@ export default function LandingPage() {
             <h1 id="hero-heading">YOUR ROAD<br /><span>STARTS HERE<span className="landing-period">.</span></span></h1>
             <p className="landing-tagline">Know what’s next. Track your progress. Get there safely.</p>
             <p className="landing-description">From first permit to confident driving, Teensurance helps<br className="landing-desktop-break" /> young drivers and their families navigate every step ahead.</p>
-            <div className="landing-actions"><Link href="/pilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/pilot?role=parent&tab=family" className="landing-parent">I’m a parent</Link></div>
+            <div className="landing-actions"><Link href="/auth/login?next=%2Fpilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/join" className="landing-parent">I have an invite</Link></div>
           </div>
           <div className="landing-stories" role="region" aria-roledescription="carousel" aria-label="Your road ahead">
             <div className="landing-story-grid" aria-live="polite">
