@@ -23,20 +23,21 @@ export type RequirementSource={id:string;jurisdiction:string;url:string;title:st
 export type ExceptionCase={id:string;code:string;message:string;status:'open'|'resolved';createdAt:string;resolvedAt?:string};
 export type NotificationRecord={id:string;kind:string;recipient:Role;status:'queued'|'deferred'|'delivered'|'suppressed';reason:string;createdAt:string};
 export type WorkflowInstance={id:string;workflow:string;state:string;owner:string;updatedAt:string;lastEvent?:string};
+export type LessonAttempt={lessonId:string;scenarioId?:string;choiceId?:string;safe?:boolean;completedAt?:string;updatedAt:string};
 
 export type State={
  logs:Log[];audit:Audit[];goalHours:number;activePlan?:PracticePlan;safetyChecks:SafetyCheck[];reflections:Reflection[];
  corrections:Correction[];evidence:EvidenceRecord[];cover:CoverChecklist;processedRequestIds:string[];
  events:DomainEventRecord[];jurisdiction?:JurisdictionSelection;consent:ConsentState;guardian:GuardianState;
  reviewQueue:ReviewCase[];requirementSources:RequirementSource[];exceptions:ExceptionCase[];notifications:NotificationRecord[];
- workflowInstances:WorkflowInstance[];
+ workflowInstances:WorkflowInstance[];lessonAttempts:LessonAttempt[];
 };
 
 export const initialState=():State=>({
  logs:[],audit:[],goalHours:20,safetyChecks:[],reflections:[],corrections:[],evidence:[],
  cover:{householdReviewed:false,vehicleInfoReady:false,questionsPrepared:false},
  processedRequestIds:[],events:[],consent:{guardianAcknowledged:false,teenAcknowledged:false,dataPurposeVersion:'mvp-v1'},
- guardian:{relationshipStatus:'unverified'},reviewQueue:[],requirementSources:[],exceptions:[],notifications:[],workflowInstances:[]
+ guardian:{relationshipStatus:'unverified'},reviewQueue:[],requirementSources:[],exceptions:[],notifications:[],workflowInstances:[],lessonAttempts:[]
 });
 
 export function normalizeState(value:Partial<State>|undefined|null):State{
@@ -61,7 +62,8 @@ export function normalizeState(value:Partial<State>|undefined|null):State{
   requirementSources:Array.isArray(value.requirementSources)?value.requirementSources:base.requirementSources,
   exceptions:Array.isArray(value.exceptions)?value.exceptions:base.exceptions,
   notifications:Array.isArray(value.notifications)?value.notifications:base.notifications,
-  workflowInstances:Array.isArray(value.workflowInstances)?value.workflowInstances:base.workflowInstances
+  workflowInstances:Array.isArray(value.workflowInstances)?value.workflowInstances:base.workflowInstances,
+  lessonAttempts:Array.isArray(value.lessonAttempts)?value.lessonAttempts:base.lessonAttempts
  };
 }
 
