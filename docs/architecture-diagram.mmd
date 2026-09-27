@@ -1,0 +1,46 @@
+flowchart TD
+    U[User: Teen / Parent / Supervisor] --> T[T — Primary Assistant]
+    T --> IC[Intent & Context]
+    IC --> G1[GUARD — Safety Kernel]
+    G1 -->|ALLOW / DEFER / REQUIRE_* / ESCALATE / DENY| A{T-Crew Specialist Agent}
+
+    A --> VIBE[VIBE — Journey/Navigation]
+    A --> READY[READY — Permit Prep]
+    A --> ACE[ACE — Driving & Insurance Learning]
+    A --> MILES[MILES — Session Logging]
+    A --> CRUZE[CRUZE — Practice Planning]
+    A --> GO[GO — Licensing Milestones]
+    A --> COVER[COVER — Insurance Prep]
+
+    VIBE --> DS[Domain Services]
+    READY --> DS
+    ACE --> DS
+    MILES --> DS
+    CRUZE --> DS
+    GO --> DS
+    COVER --> DS
+
+    DS --> JG[Journey Graph]
+    DS --> RG[Requirement Graph]
+    DS --> FG[Family Graph]
+    DS --> EG[Evidence Graph]
+    DS --> IG[Insurance Profile]
+
+    JG --> DB[(PostgreSQL / Supabase)]
+    RG --> DB
+    FG --> DB
+    EG --> DB
+    IG --> DB
+
+    DS --> G2[GUARD — post-action check]
+    G2 --> T
+    T --> U
+
+    subgraph Drive Mode
+        MILES --> DM[Drive Session]
+        DM -->|offline-tolerant| SV[Supervisor Verification]
+        SV --> JG
+    end
+
+    G1 -.audit.-> AUDIT[(AuditEvent / SafetyDecision Log)]
+    G2 -.audit.-> AUDIT

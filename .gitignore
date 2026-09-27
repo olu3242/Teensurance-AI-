@@ -4,3 +4,9 @@ data/*.json
 *.tsbuildinfo
 *.zip
 upload/
+
+.env
+.env.local
+.env.*.local
+.vercel/
+coverage/
