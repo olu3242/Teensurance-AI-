@@ -1,42 +1,55 @@
 {
-  "at": "2026-09-28T22:29:02.076Z",
+  "at": "2026-09-28T22:32:43.436Z",
   "scope": "Automated checks only; separate security review and hosted release gates are required",
   "status": "AUTOMATED_GATES_PASSED",
   "gates": [
     {
       "script": "security:certify",
       "exitCode": 0,
-      "durationMs": 16997
+      "durationMs": 13839
     },
     {
       "script": "typecheck",
       "exitCode": 0,
-      "durationMs": 4334
+      "durationMs": 3577
     },
     {
       "script": "lint",
       "exitCode": 0,
-      "durationMs": 7573
+      "durationMs": 8315
     },
     {
       "script": "test",
       "exitCode": 0,
-      "durationMs": 16608
+      "durationMs": 20406
     },
     {
       "script": "build",
       "exitCode": 0,
-      "durationMs": 36633
+      "durationMs": 35896
     },
     {
       "script": "test:roadready:e2e",
       "exitCode": 0,
-      "durationMs": 71831
+      "durationMs": 64141
     },
     {
       "script": "test:e2e",
       "exitCode": 0,
-      "durationMs": 60519
+      "durationMs": 44288
     }
-  ]
+  ],
+  "testedCommit": "610640748cc154fdd788eb2bdd8b8e31a3040d3e",
+  "unitApiTests": {
+    "passed": 140,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browserTests": {
+    "roadreadyPassed": 12,
+    "householdPassed": 3,
+    "failed": 0,
+    "skipped": 0
+  },
+  "hostedStatus": "BLOCKED"
 }

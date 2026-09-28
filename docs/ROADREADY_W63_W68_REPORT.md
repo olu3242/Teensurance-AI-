@@ -136,3 +136,22 @@ follow-up. No hosted database, migration, release SHA, deployment URL, smoke tes
 teen journey or guardian journey is certified. Next action: establish the intended
 hosted operational database and map session/membership/evidence ownership with
 reviewed migration and membership policies before deployment.
+
+## Committed-state release evidence
+
+Application commit: `610640748cc154fdd788eb2bdd8b8e31a3040d3e`.
+Committed-state full certification passed: 155/155 tests, 0 failures, 0 skips;
+all seven aggregate gates exited 0. RoadReady browser report records 12 expected,
+0 unexpected and 0 flaky cases. Three household journeys passed separately.
+No implementation files changed during this certification. Generated evidence is
+recorded in a documentation-only follow-up commit; its application tree is identical.
+
+Normal push of 6106407 succeeded to origin/mvp-integration-w100; git ls-remote
+confirmed the exact application SHA. Merge commit dc66bdf remains in its history.
+No force push, hosted migration or manual deployment was performed. An automatic
+hosting integration may react to a branch push, but no resulting deployment has
+been verified or certified.
+
+Final status: **CERTIFIED LOCALLY — HOSTED BLOCKED**.
+Next action: connect the intended operational hosted database and establish a
+reviewed adapter/membership migration before any hosted release certification.

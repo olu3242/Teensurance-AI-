@@ -48,7 +48,7 @@
       [
         "json",
         {
-          "outputFile": "test-results/roadready-browser.json"
+          "outputFile": "docs/ROADREADY_BROWSER_RESULTS.json"
         }
       ]
     ],
@@ -69,7 +69,7 @@
       "timeout": 120000,
       "env": {
         "NEXT_DIST_DIR": ".next-roadready",
-        "TEENSURANCE_DB_PATH": "C:\\Cdev\\Teensurance\\data\\roadready-browser-1790603107670.sqlite",
+        "TEENSURANCE_DB_PATH": "C:\\Cdev\\Teensurance\\data\\roadready-browser-1790634656212.sqlite",
         "ROADREADY_LEARNING_ENABLED": "true"
       }
     }
@@ -97,12 +97,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 19849,
+                  "duration": 23123,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:16.477Z",
+                  "startTime": "2026-09-28T22:31:03.195Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -112,7 +112,7 @@
           ],
           "id": "81c2791b0be91fd6bf89-20126ef06e6b11cf69ce",
           "file": "roadready.spec.ts",
-          "line": 35,
+          "line": 36,
           "column": 5
         },
         {
@@ -131,12 +131,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2184,
+                  "duration": 2594,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:37.010Z",
+                  "startTime": "2026-09-28T22:31:26.639Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -146,7 +146,7 @@
           ],
           "id": "81c2791b0be91fd6bf89-128ddaafbd22d2bd33f2",
           "file": "roadready.spec.ts",
-          "line": 43,
+          "line": 44,
           "column": 5
         },
         {
@@ -165,12 +165,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2050,
+                  "duration": 2047,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:39.205Z",
+                  "startTime": "2026-09-28T22:31:29.256Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -180,7 +180,7 @@
           ],
           "id": "81c2791b0be91fd6bf89-2e852ca076915e2c71f9",
           "file": "roadready.spec.ts",
-          "line": 44,
+          "line": 45,
           "column": 5
         },
         {
@@ -199,12 +199,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 6319,
+                  "duration": 4718,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:41.264Z",
+                  "startTime": "2026-09-28T22:31:31.320Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -214,7 +214,7 @@
           ],
           "id": "81c2791b0be91fd6bf89-b4e21ad303c646b13472",
           "file": "roadready.spec.ts",
-          "line": 45,
+          "line": 46,
           "column": 5
         },
         {
@@ -233,12 +233,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 2125,
+                  "duration": 2395,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:47.593Z",
+                  "startTime": "2026-09-28T22:31:36.056Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -248,7 +248,7 @@
           ],
           "id": "81c2791b0be91fd6bf89-b003b5c649c7b8eeffe8",
           "file": "roadready.spec.ts",
-          "line": 46,
+          "line": 47,
           "column": 5
         },
         {
@@ -267,12 +267,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 657,
+                  "duration": 637,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:49.734Z",
+                  "startTime": "2026-09-28T22:31:38.479Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -282,7 +282,7 @@
           ],
           "id": "81c2791b0be91fd6bf89-87406330921de0d8832e",
           "file": "roadready.spec.ts",
-          "line": 47,
+          "line": 48,
           "column": 5
         },
         {
@@ -301,12 +301,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 705,
+                  "duration": 874,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-09-28T13:45:50.408Z",
+                  "startTime": "2026-09-28T22:31:39.132Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -316,7 +316,177 @@
           ],
           "id": "81c2791b0be91fd6bf89-1460e4151722cc875a12",
           "file": "roadready.spec.ts",
-          "line": 48,
+          "line": 49,
+          "column": 5
+        },
+        {
+          "title": "E2E-08 hazard text alternative, incorrect response, explanation and persisted Passport",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4489,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T22:31:40.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-6e4ebf54cf1ce93964fd",
+          "file": "roadready.spec.ts",
+          "line": 53,
+          "column": 5
+        },
+        {
+          "title": "E2E-09 two misses produce stable Scout review and completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4596,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T22:31:44.525Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-03174ebfee971310690a",
+          "file": "roadready.spec.ts",
+          "line": 54,
+          "column": 5
+        },
+        {
+          "title": "E2E-10 Permit Prep review, persistence and Passport separation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4653,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T22:31:49.135Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-593d30065597850a35d9",
+          "file": "roadready.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "E2E-11 Guardian Coach records separate reinforcement and rejects teen forgery",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2352,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T22:31:53.805Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-43dabae490950a9dd51f",
+          "file": "roadready.spec.ts",
+          "line": 56,
+          "column": 5
+        },
+        {
+          "title": "E2E-12 non-Texas content fallback excludes Texas permit questions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1794,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T22:31:56.173Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-d3e0e3995f383b2a40f1",
+          "file": "roadready.spec.ts",
+          "line": 57,
           "column": 5
         }
       ]
@@ -324,9 +494,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-09-28T13:45:07.673Z",
-    "duration": 44571.059,
-    "expected": 7,
+    "startTime": "2026-09-28T22:30:56.215Z",
+    "duration": 62884.829,
+    "expected": 12,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

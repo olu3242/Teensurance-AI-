@@ -252,3 +252,9 @@ SQLite without a hosted mapping, the legacy membership insert policy is unsafe,
 no intended Teensurance project appears in connected Supabase inventory, and the
 Vercel project-detail connector fails its idOrName schema validation. No unrelated
 project was touched. Local passing tests do not certify hosted persistence or RLS.
+
+Final W63–W68 application commit 610640748cc154fdd788eb2bdd8b8e31a3040d3e passed
+committed-state certification (140 unit/API + 15 browser tests, typecheck, lint,
+build and all aggregate gates). Normal push succeeded and remote SHA matched.
+Final status: CERTIFIED LOCALLY — HOSTED BLOCKED. See the consolidated report for
+source-review limitations, hosted blockers and evidence-preserving rollback.
