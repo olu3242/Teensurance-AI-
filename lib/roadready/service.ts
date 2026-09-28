@@ -8,7 +8,7 @@ import {authorizeLearner} from '../platform/authorization';
 import {ageOn,journey} from '../platform/journey';
 import {texasRule} from '../platform/texas';
 import type {Drive,Evidence,SafetyDecision,User} from '../platform/types';
-import {challenges,concepts,jurisdictionPack,modeFor} from './content';
+import {concepts,jurisdictionPack,modeFor} from './content';
 import {learningPolicy,mastery,observationGapMs} from './rules';
 import {modes,type GuardianReinforcement,type LearningEvidence,type LearningSession,type ScoutRecommendation} from './types';
 const scopeFields={householdId:z.string().uuid(),teenId:z.string().uuid()};
@@ -58,7 +58,7 @@ function selectChallenges(householdId:string,teenId:string,jurisdiction:string,m
  const ordered=eligible.sort((a,b)=>rank(a.id)-rank(b.id)||a.id.localeCompare(b.id));
  return ordered.slice(0,5).map(c=>{const attempts=s.e.learning.filter(e=>e.conceptId===c.id);const last=attempts.at(-1);const variants=s.challenges.filter(q=>q.conceptId===c.id);return variants.find(q=>!attempts.some(e=>e.challengeId===q.id))?.id||variants[(variants.findIndex(q=>q.id===last?.challengeId)+1)%variants.length].id});
 }
-function publicSession(s:LearningSession){const q=challenges.find(q=>q.id===s.challengeIds[s.cursor]);return {...s,challenge:q?{id:q.id,conceptId:q.conceptId,prompt:q.prompt,options:q.options}:null}}
+function publicSession(s:LearningSession){const q=jurisdictionPack(s.jurisdiction).challenges.find(q=>q.id===s.challengeIds[s.cursor]);return {...s,challenge:q?{id:q.id,conceptId:q.conceptId,prompt:q.prompt,options:q.options}:null}}
 export function readRoadReady(user:User,householdId:string,teenId:string){
  return transaction(()=>{try{
   const auth=authorize(user,householdId,teenId,'read');ensureEvidenceProtection();
@@ -89,7 +89,7 @@ export function executeRoadReady(user:User,raw:unknown,key:string){return transa
      const s=put<LearningSession>('roadready_session',{...base(c.householdId,c.teenId),teenId:c.teenId,mode:c.mode,jurisdiction:auth.jurisdiction,challengeIds:ids,cursor:0,startedAt:now()});result=publicSession(s);event(c.householdId,c.teenId,'learning_session_started');event(c.householdId,c.teenId,'roadready_started');}
    }else if(c.action==='answer'){
     const s=get<LearningSession>('roadready_session',c.sessionId);if(!s||s.householdId!==c.householdId||s.teenId!==c.teenId||s.completedAt)fail('Learning session not available.',409);
-    const q=challenges.find(q=>q.id===s!.challengeIds[s!.cursor]);if(!q||q.id!==c.challengeId||!q.options.some(o=>o.id===c.answerId))fail('Answer does not match the current challenge.',409);
+    const q=jurisdictionPack(auth.jurisdiction).challenges.find(q=>q.id===s!.challengeIds[s!.cursor]);if(!q||q.id!==c.challengeId||!q.options.some(o=>o.id===c.answerId))fail('Answer does not match the current challenge.',409);
     const concept=concepts.find(x=>x.id===q!.conceptId)!;const before=evidence(c.householdId,c.teenId);const prior=mastery(concept.id,before.learning,before.guardian);
     const e=put<LearningEvidence>('roadready_attempt',{...base(c.householdId,c.teenId),teenId:c.teenId,conceptId:concept.id,sessionId:s!.id,challengeId:q!.id,answerId:c.answerId,correct:q!.answerId===c.answerId,at:now(),kind:'learning',contentVersion:concept.contentVersion});
     const completed=s!.cursor+1===s!.challengeIds.length;put('roadready_session',{...s!,cursor:s!.cursor+1,completedAt:completed?now():undefined});

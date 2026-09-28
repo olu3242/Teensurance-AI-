@@ -237,3 +237,18 @@ append-only protections. Do not delete learner history to roll back the feature.
 
 Next action: migrate or retire the three legacy shared-state API surfaces and add
 cross-household/unauthenticated regression coverage before rerunning the local gate.
+
+
+## W63–W68 continuation (supersedes earlier next-action entries)
+
+W63 merge dc66bdf5ae27e38e5d362cb988d169e67ebb34ac completed, passed committed-state
+certification (111 baseline tests plus typecheck/lint/build) and was pushed normally
+to origin/mvp-integration-w100. W64–W68 implementation and final certification are
+tracked in [ROADREADY_W63_W68_REPORT.md](ROADREADY_W63_W68_REPORT.md).
+
+The three legacy shared-state surfaces are now isolated/retired with authorization
+regression coverage. Hosted release is still blocked: operational persistence is
+SQLite without a hosted mapping, the legacy membership insert policy is unsafe,
+no intended Teensurance project appears in connected Supabase inventory, and the
+Vercel project-detail connector fails its idOrName schema validation. No unrelated
+project was touched. Local passing tests do not certify hosted persistence or RLS.

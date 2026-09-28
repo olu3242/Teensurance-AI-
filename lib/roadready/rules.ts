@@ -1,6 +1,6 @@
 import type {ConceptMastery,GuardianReinforcement,LearningEvidence} from './types';
 export const observationGapMs = 24 * 60 * 60 * 1000;
-export const prohibitedActions = ['speed_score','miles_competition','drive_count_streak','leaderboard','fastest_answer_ranking','trip_count_reward','in_drive_prompt','insurance_risk_score','legal_eligibility','teen_ranking','safe_driver_label','premium_prediction'] as const;
+export const prohibitedActions = ['reaction_time_score','hazard_leaderboard','driving_risk_score','speed_score','miles_competition','drive_count_streak','leaderboard','fastest_answer_ranking','trip_count_reward','in_drive_prompt','insurance_risk_score','legal_eligibility','teen_ranking','safe_driver_label','premium_prediction'] as const;
 export function learningPolicy(action:string,driving:boolean){
  if(driving)return {decision:'DEFER' as const,reason:'Resume RoadReady after the drive has ended and you are safely parked.'};
  if(!['read','start','answer','reinforce','accept_recommendation'].includes(action))return {decision:'DENY' as const,reason:'Scout only supports educational learning and parked reinforcement.'};
@@ -9,7 +9,7 @@ export function learningPolicy(action:string,driving:boolean){
 /** Deterministic projection of immutable observations. Distinct variants on different days
  * are required; refreshing/replaying one item cannot establish demonstration. */
 export function mastery(conceptId:string,learning:LearningEvidence[],guardian:GuardianReinforcement[]):ConceptMastery {
- const events=[...learning.filter(e=>e.conceptId===conceptId),...guardian.filter(e=>e.conceptId===conceptId)].sort((a,b)=>a.at.localeCompare(b.at)||a.id.localeCompare(b.id));
+ const events=[...learning.filter(e=>e.conceptId===conceptId),...guardian.filter(e=>e.conceptId===conceptId)].sort((a,b)=>a.at.localeCompare(b.at)||Number(a.kind==='guardian')-Number(b.kind==='guardian')||a.id.localeCompare(b.id));
  let state:ConceptMastery['state']='not_started';let qualifying:LearningEvidence[]=[];let retryAt:string|undefined;
  for(const event of events){
   if(event.kind==='guardian'){
