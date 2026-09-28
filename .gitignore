@@ -18,6 +18,7 @@ coverage/
 .next/
 .next-cert/
 .next-cert-build/
+.next-roadready/
 
 # Local runtime state
 data/

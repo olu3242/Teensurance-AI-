@@ -1,0 +1,334 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Cdev\\Teensurance\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config=playwright.roadready.config.ts"
+    ],
+    "configFile": "C:\\Cdev\\Teensurance\\playwright.roadready.config.ts",
+    "rootDir": "C:/Cdev/Teensurance/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Cdev/Teensurance/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Cdev/Teensurance/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "roadready.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/roadready-browser.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --hostname 127.0.0.1 --port 3101",
+      "url": "http://127.0.0.1:3101",
+      "reuseExistingServer": false,
+      "timeout": 120000,
+      "env": {
+        "NEXT_DIST_DIR": ".next-roadready",
+        "TEENSURANCE_DB_PATH": "C:\\Cdev\\Teensurance\\data\\roadready-browser-1790603107670.sqlite",
+        "ROADREADY_LEARNING_ENABLED": "true"
+      }
+    }
+  },
+  "suites": [
+    {
+      "title": "roadready.spec.ts",
+      "file": "roadready.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "E2E-01 authenticated login, five shared modes, explanation, persistence, keyboard and responsive layout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19849,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:16.477Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-20126ef06e6b11cf69ce",
+          "file": "roadready.spec.ts",
+          "line": 35,
+          "column": 5
+        },
+        {
+          "title": "E2E-02 wrong answer explains and appears in Needs Another Look",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2184,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:37.010Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-128ddaafbd22d2bd33f2",
+          "file": "roadready.spec.ts",
+          "line": 43,
+          "column": 5
+        },
+        {
+          "title": "E2E-03 weak concept resurfaces as an alternative challenge",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2050,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:39.205Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-2e852ca076915e2c71f9",
+          "file": "roadready.spec.ts",
+          "line": 44,
+          "column": 5
+        },
+        {
+          "title": "E2E-04 later observations appear in Passport with provenance",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6319,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:41.264Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-b4e21ad303c646b13472",
+          "file": "roadready.spec.ts",
+          "line": 45,
+          "column": 5
+        },
+        {
+          "title": "E2E-05 linked guardian parked practice reinforces qualifying evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2125,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:47.593Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-b003b5c649c7b8eeffe8",
+          "file": "roadready.spec.ts",
+          "line": 46,
+          "column": 5
+        },
+        {
+          "title": "E2E-06 unrelated household and forged guardian evidence denied",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 657,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:49.734Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-87406330921de0d8832e",
+          "file": "roadready.spec.ts",
+          "line": 47,
+          "column": 5
+        },
+        {
+          "title": "E2E-07 prohibited mechanisms and active-drive interactions denied",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 705,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-28T13:45:50.408Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "81c2791b0be91fd6bf89-1460e4151722cc875a12",
+          "file": "roadready.spec.ts",
+          "line": 48,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-28T13:45:07.673Z",
+    "duration": 44571.059,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

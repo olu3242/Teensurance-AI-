@@ -3,7 +3,9 @@ import {initialState} from '../domain';
 import {agentFor} from './agents';
 import {buildContext} from './context';
 import {orchestrate} from './orchestrator';
-import {resolveTrigger} from './triggers';\nimport {notificationPolicy} from './notifications';\nimport {operationalInbox} from './reviews';
+import {resolveTrigger} from './triggers';
+import {notificationPolicy} from './notifications';
+import {operationalInbox} from './reviews';
 import {workflowRegistry} from './workflows';
 
 const teen={role:'teen' as const,drivingState:'parked' as const};
@@ -42,20 +44,23 @@ describe('Teensurance Workflow OS',()=>{
  });
  it('routes commands through specialist agents and emits domain events',()=>{
   const state=initialState();
-  state.consent.teenAcknowledged=true;\n  const result=orchestrate(state,{action:'plan',...teen,skill:'Turns',objective:'Scan intersections',supervisor:'Adult'});
+  state.consent.teenAcknowledged=true;
+  const result=orchestrate(state,{action:'plan',...teen,skill:'Turns',objective:'Scan intersections',supervisor:'Adult'});
   expect(result.trace.agent).toBe('CRUZE');
   expect(result.trace.events).toEqual(['practice.plan.created']);
   expect(state.events[0].type).toBe('practice.plan.created');
  });
  it('is idempotent for retried commands',()=>{
   const state=initialState();const requestId='8b75b7ea-8f2c-4e7f-96bb-5c28a60e2ac7';
-  state.consent.teenAcknowledged=true;\n  const command={action:'plan' as const,...teen,requestId,skill:'Parking',objective:'Reference points',supervisor:'Adult'};
+  state.consent.teenAcknowledged=true;
+  const command={action:'plan' as const,...teen,requestId,skill:'Parking',objective:'Reference points',supervisor:'Adult'};
   orchestrate(state,command);const count=state.events.length;const again=orchestrate(state,command);
   expect(again.duplicate).toBe(true);expect(state.events).toHaveLength(count);
  });
  it('makes supervisor verification an evidence-producing workflow',()=>{
   const state=initialState();
-  state.consent.teenAcknowledged=true;state.consent.guardianAcknowledged=true;\n  const logged=orchestrate(state,{action:'log',...teen,date:'2026-09-01',minutes:30,night:false,skill:'Turns',supervisor:'Adult',note:''});
+  state.consent.teenAcknowledged=true;state.consent.guardianAcknowledged=true;
+  const logged=orchestrate(state,{action:'log',...teen,date:'2026-09-01',minutes:30,night:false,skill:'Turns',supervisor:'Adult',note:''});
   const id=logged.state.logs[0].id;
   const verified=orchestrate(state,{action:'verify',role:'parent',drivingState:'parked',id});
   expect(verified.trace).toMatchObject({workflow:'verification',agent:'MILES'});

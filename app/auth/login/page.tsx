@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import Link from 'next/link';
+
 import {BrandLogo} from '@/components/BrandLogo';
 import {HelpChat} from '@/components/HelpChat';
 import {createClient} from '@/lib/supabase/client';

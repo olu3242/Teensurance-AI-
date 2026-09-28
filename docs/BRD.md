@@ -52,3 +52,14 @@ Teensurance AI MVP is **not** an insurance carrier, MGA, or broker of record, an
 ## 9. Out of scope (business-level, MVP)
 
 Carrier marketplace, carrier binding, MGA functionality, proprietary premium scoring, advanced telematics, continuous GPS surveillance, social/competitive features, large rewards marketplace, vehicle marketplace, nationwide unsupported requirement claims, public developer API, and lifecycle stages beyond initial licensing (college, independent-policy lifecycle).
+
+## RoadReady Learning extension
+
+Families can learn foundational signs, signals, markings and decisions through five
+accessible modes. Progress is concept-level evidence: not started, introduced,
+practicing, demonstrated and reinforced. Guardian parked-practice confirmation is
+separate from learner answers. Road Knowledge & Awareness extends the Passport
+without creating licensing eligibility, insurance approval, risk scores or a safe-driver
+designation. Games never reward driving quantity, competition or answer speed.
+Pilot activation is controlled by `ROADREADY_LEARNING_ENABLED`; see the RoadReady
+execution report for release gates and current limitations.

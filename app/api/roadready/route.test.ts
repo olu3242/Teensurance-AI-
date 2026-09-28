@@ -1,0 +1,13 @@
+import {afterEach,beforeEach,expect,it} from 'vitest';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {GET,POST} from './route';
+import {closeDatabases,db} from '@/lib/platform/db';
+import {createSession,register} from '@/lib/platform/auth';
+let dir:string;
+beforeEach(()=>{dir=mkdtempSync(join(tmpdir(),'roadready-http-'));process.env.TEENSURANCE_DB_PATH=join(dir,'test.sqlite');process.env.ROADREADY_LEARNING_ENABLED='true'});
+afterEach(()=>{closeDatabases();delete process.env.TEENSURANCE_DB_PATH;delete process.env.ROADREADY_LEARNING_ENABLED;rmSync(dir,{recursive:true,force:true})});
+it('requires an authenticated session for reads, regardless of supplied role',async()=>{const r=await GET(new Request('http://localhost/api/roadready?role=guardian&teenId=someone'));expect(r.status).toBe(401);expect(r.headers.get('cache-control')).toBe('no-store')});
+it('rejects cross-origin writes before executing any command',async()=>{const user=register('guardian@example.test','long-password-123','Guardian');const token=createSession(user);const r=await POST(new Request('http://localhost/api/roadready',{method:'POST',headers:{origin:'http://attacker.test','content-type':'application/json',cookie:`teensurance_session=${token}`},body:JSON.stringify({action:'reinforce',role:'guardian'})}));expect(r.status).toBe(403);expect(db().prepare("SELECT * FROM records WHERE kind='roadready_guardian'").all()).toHaveLength(0)});
+it('rejects and audits unsupported gamification at the authenticated HTTP boundary',async()=>{const user=register('learner@example.test','long-password-123','Learner');const token=createSession(user);const r=await POST(new Request('http://localhost/api/roadready',{method:'POST',headers:{origin:'http://localhost','content-type':'application/json',cookie:`teensurance_session=${token}`},body:JSON.stringify({action:'insurance_risk_score'})}));expect(r.status).toBe(400);expect(db().prepare("SELECT * FROM audit WHERE decision='DENY'").all()).toHaveLength(1)});

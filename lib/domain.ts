@@ -6,7 +6,7 @@ export type SafetyTopic='phone_away'|'seatbelt_setup'|'mirrors_controls'|'superv
 export type Confidence='building'|'steady'|'confident';
 export type LogStatus='pending'|'verified'|'disputed';
 
-export type Log={id:string;date:string;minutes:number;night:boolean;skill:string;supervisor:string;note:string;status:LogStatus;createdAt:string;verifiedAt?:string;disputedAt?:string;reviewedBy?:Role;disputeReason?:string};
+export type Log={id:string;date:string;minutes:number;night:boolean;nightMinutes?:number;skill:string;supervisor:string;note:string;status:LogStatus;createdAt:string;verifiedAt?:string;disputedAt?:string;reviewedBy?:Role;disputeReason?:string};
 export type Audit={id:string;at:string;action:string;actor:Role;drivingState:DrivingState;decision:Decision;reason:string};
 export type PracticePlan={id:string;skill:string;objective:string;supervisor:string;createdAt:string;completedAt?:string};
 export type SafetyCheck={topic:SafetyTopic;completedBy:Role;completedAt:string};
@@ -123,14 +123,30 @@ export function guard(action:string,role:Role,drivingState:DrivingState,state:St
   return{decision:'ALLOW',reason:'Correction recorded with provenance.'};
  }
  if(action==='dispute'){
-  if(!state.logs.some(l=>l.id===payload.id&&l.status==='pending'))return{decision:'DENY',reason:'Only a pending entry can be disputed.'};
+  if(!state.logs.some(l=>l.id===payload.id&&(l.status==='pending'||l.status==='verified')))return{decision:'DENY',reason:'Only a pending or verified entry can be disputed.'};
   if(!payload.reason)return{decision:'REQUIRE_VERIFICATION',reason:'A dispute reason is required.'};
   return{decision:'ALLOW',reason:'Entry disputed and excluded from verified progress.'};
  }
  if(action==='jurisdiction'){
-  if(!payload.name)return{decision:'REQUIRE_OFFICIAL_SOURCE',reason:'Choose a jurisdiction before reviewing official requirements.'};
-  return{decision:'ALLOW',reason:'Jurisdiction recorded as unverified. No legal eligibility decision will be made.'};
- }
+  if(!payload.name){
+    return{
+      decision:'REQUIRE_OFFICIAL_SOURCE',
+      reason:'Choose a jurisdiction before reviewing official requirements.'
+    };
+  }
+
+  if(payload.officialSourceUrl){
+    return{
+      decision:'REQUIRE_OFFICIAL_SOURCE',
+      reason:'A regulatory source must be reviewed before it can become authoritative.'
+    };
+  }
+
+  return{
+    decision:'ALLOW',
+    reason:'Jurisdiction recorded as unverified. No legal eligibility decision will be made.'
+  };
+}
  if(action==='requirement_source')return role==='parent'?{decision:'REQUIRES_HUMAN_REVIEW',reason:'Official-source candidates must be reviewed before becoming authoritative.'}:{decision:'REQUIRE_PARENT',reason:'A parent or administrator must submit requirement-source candidates.'};
  if(action==='consent_teen')return role==='teen'?{decision:'ALLOW',reason:'Teen pilot acknowledgment recorded.'}:{decision:'DENY',reason:'Teen acknowledgment must be completed in Teen view.'};
  if(action==='consent_guardian')return role==='parent'?{decision:'ALLOW',reason:'Guardian pilot acknowledgment recorded.'}:{decision:'REQUIRE_PARENT',reason:'Guardian acknowledgment requires Parent view.'};
@@ -144,7 +160,7 @@ export function guard(action:string,role:Role,drivingState:DrivingState,state:St
 export function progress(state:State){
  const verified=state.logs.filter(l=>l.status==='verified');
  const minutes=verified.reduce((sum,l)=>sum+l.minutes,0);
- const nightMinutes=verified.filter(l=>l.night).reduce((sum,l)=>sum+l.minutes,0);
+ const nightMinutes=verified.reduce((sum,l)=>sum+(l.nightMinutes??(l.night?l.minutes:0)),0);
  const goalMinutes=Math.max(1,state.goalHours*60);
  return{verifiedMinutes:minutes,nightMinutes,pending:state.logs.filter(l=>l.status==='pending').length,disputed:state.logs.filter(l=>l.status==='disputed').length,percent:Math.min(100,Math.round(minutes/goalMinutes*100))};
 }
@@ -182,7 +198,7 @@ export function nextBestStep(state:State){
 export function coverReadiness(state:State){const completed=Object.values(state.cover).filter(Boolean).length;return{completed,total:3,readyForConversation:completed===3,disclaimer:'COVER prepares questions and household information only. It does not quote, recommend, bind, or determine insurance eligibility.'};}
 export function coverStatus(state:State){const readiness=coverReadiness(state);const active=state.logs.some(x=>x.status==='verified')&&state.safetyChecks.filter(x=>teenSafetyTopics.has(x.topic)).length===3&&state.consent.guardianAcknowledged;return{...readiness,active,quoteEnabled:false};}
 export function pilotAnalytics(state:State){return{drivesRecorded:state.logs.length,drivesVerified:state.logs.filter(x=>x.status==='verified').length,drivesPending:state.logs.filter(x=>x.status==='pending').length,drivesDisputed:state.logs.filter(x=>x.status==='disputed').length,reflections:state.reflections.length,safetyChecks:state.safetyChecks.length,guardDeferrals:state.audit.filter(x=>x.decision==='DEFER').length,guardDenials:state.audit.filter(x=>x.decision==='DENY').length,openReviews:state.reviewQueue.filter(x=>x.status==='open').length,openExceptions:state.exceptions.filter(x=>x.status==='open').length};}
-export function pilotReadiness(state:State){const functional={journey:true,nextBestStep:true,guard:true,driveLogging:true,supervisorReview:true,correctionsAndDisputes:true,evidenceProvenance:true,passport:true,coverPreparation:true,auditTrail:true,workflowOS:true,humanReviewQueue:true};const productionBlockers=['Authenticated teen/guardian identity and verified relationships','Durable transactional database with household isolation/RLS','Production consent, retention and minor-data controls','Human-verified official-source-backed jurisdiction requirement records','Production-grade driving-state detection strategy','Accessibility, security and real-family pilot certification'];return{functional,productionReady:false,productionBlockers,localPilotReady:Object.values(functional).every(Boolean)};}
+export function pilotReadiness(){const functional={journey:true,nextBestStep:true,guard:true,driveLogging:true,supervisorReview:true,correctionsAndDisputes:true,evidenceProvenance:true,passport:true,coverPreparation:true,auditTrail:true,workflowOS:true,humanReviewQueue:true};const productionBlockers=['Authenticated teen/guardian identity and verified relationships','Durable transactional database with household isolation/RLS','Production consent, retention and minor-data controls','Human-verified official-source-backed jurisdiction requirement records','Production-grade driving-state detection strategy','Accessibility, security and real-family pilot certification'];return{functional,productionReady:false,productionBlockers,localPilotReady:Object.values(functional).every(Boolean)};}
 
 const prohibitedMechanics=new Set(['speed_score','miles_competition','drive_count_streak','leaderboard','trip_count_reward','in_drive_prompt']);
 export function engagementPolicy(mechanic:string):{decision:'ALLOW'|'DENY';reason:string}{if(prohibitedMechanics.has(mechanic))return{decision:'DENY',reason:'Teensurance does not use engagement mechanics that can reward more, faster, competitive, or distracted driving.'};return{decision:'ALLOW',reason:'Mechanic does not conflict with the current safety deny-list.'};}

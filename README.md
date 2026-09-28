@@ -41,3 +41,27 @@ The pilot now models the complete safety-first practice loop: parked preparation
 Jurisdiction remains deliberately unverified until an official source is reviewed. COVER does not quote, bind, score, or recommend an insurer. Disputed practice does not count toward verified totals. Corrections retain provenance.
 
 See `docs/W40-W50_MVP_REPORT.md` for the wave gates and remaining blockers before any real-minor pilot.
+
+## Operational MVP implementation
+
+The harmonized MVP also retains the local W16-W30 operational platform layer, including workspace services, authorization scaffolding, rules services, Playwright E2E coverage, and build certification tooling.
+
+See docs/IMPLEMENTATION-W16-W30.md for the preserved operational implementation details.
+
+## RoadReady Learning local pilot
+
+Set `ROADREADY_LEARNING_ENABLED=true` in the local environment and open
+`/teen/roadready`. The default is disabled. RoadReady uses the existing local
+platform account API, household relationships, consent, SQLite records and audit
+trail. It does not use demo role selectors as authorization. Guardians can create
+an invitation and consent to learning through Family learning access.
+
+Five modes share one challenge service: Sign Snap, Symbol Match, Road Markings,
+Signal Sense and What Would You Do? The initial US-TX pack contains 54 concepts.
+Three distinct observations at least 24 hours apart establish demonstrated
+understanding; later evidence or guardian parked practice can reinforce it.
+
+Run `npm run test:roadready`, `npm run test:roadready:e2e`, or the mandatory gate
+aggregator `npm run roadready:certify`. The aggregator reports failure for any
+missing/failing gate. See [execution evidence](docs/ROADREADY_W51_W60_REPORT.md)
+for the actual certification status and existing merge/regression limitations.

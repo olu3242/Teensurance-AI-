@@ -20,7 +20,7 @@ const milestones = ['Permit', 'Learn', 'Practice', 'License', 'Covered', 'Go fur
 
 export default function LandingPage() {
   const [slide, setSlide] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="landing">
       <a className="landing-skip" href="#main">Skip to content</a>
