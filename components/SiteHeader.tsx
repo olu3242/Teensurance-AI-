@@ -5,7 +5,9 @@ import {BrandLogo} from './BrandLogo';
 
 export function SiteHeader() {
   const [open,setOpen]=useState(false);
+  const waitlistMode=process.env.NEXT_PUBLIC_WAITLIST_MODE!=='false';
   const close=()=>setOpen(false);
+  if(waitlistMode)return <header className="siteHeader"><BrandLogo/><div className="siteActions" style={{marginLeft:'auto'}}><Link href="/waitlist" className="sitePrimary">Join waitlist <span aria-hidden="true">→</span></Link></div></header>;
   return <header className="siteHeader">
     <BrandLogo />
     <button className="siteMenuButton" aria-expanded={open} aria-controls="site-nav" onClick={()=>setOpen(v=>!v)}>{open?'Close':'Menu'} <span aria-hidden="true">{open?'−':'+'}</span></button>
