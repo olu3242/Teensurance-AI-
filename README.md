@@ -51,7 +51,7 @@ See docs/IMPLEMENTATION-W16-W30.md for the preserved operational implementation 
 ## Scout Learning local pilot
 
 Set `ROADREADY_LEARNING_ENABLED=true` in the local environment and open
-`/teen/roadready`. The default is disabled. Scout Learning uses the existing local
+`/teen/scout`. The environment variable remains a temporary compatibility key until the configuration migration is completed. The default is disabled. Scout Learning uses the existing local
 platform account API, household relationships, consent, SQLite records and audit
 trail. It does not use demo role selectors as authorization. Guardians can create
 an invitation and consent to learning through Family learning access.
@@ -61,7 +61,6 @@ Signal Sense and What Would You Do? The initial US-TX pack contains 54 concepts.
 Three distinct observations at least 24 hours apart establish demonstrated
 understanding; later evidence or guardian parked practice can reinforce it.
 
-Run `npm run test:roadready`, `npm run test:roadready:e2e`, or the mandatory gate
-aggregator `npm run roadready:certify`. The aggregator reports failure for any
+Run `npm run test:scout`, `npm run test:scout:e2e`, or `npm run scout:certify`. The legacy RoadReady command names remain as compatibility aliases during migration. The aggregator reports failure for any
 missing/failing gate. See [execution evidence](docs/ROADREADY_W51_W60_REPORT.md)
 for the actual certification status and existing merge/regression limitations.\n\n### Competitive independence and evidence boundary\n\nSupervised-driving logging is a supporting evidence subsystem, not the Teensurance product category. Practice evidence feeds readiness, jurisdiction progress, the Safety & Readiness Passport, and insurance readiness; it must not independently establish legal eligibility, safe-driver status, insurance eligibility, premium amounts, or discount entitlement.\n\nCustomer-facing branding must use Teensurance-owned names. The existing `roadready` route/code namespace is a legacy technical identifier and must not be extended with new identifiers. New development should use Teensurance-owned namespaces, with the legacy namespace migrated through a compatibility-preserving refactor. Competitor products may be researched for market context but must not be used as source code, design, copy, content, workflow, or rule specifications. See `docs/IP_PROVENANCE_POLICY.md`.
