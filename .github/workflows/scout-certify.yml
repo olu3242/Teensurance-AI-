@@ -26,8 +26,6 @@ jobs:
   certify:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      SCOUT_LEARNING_ENABLED: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
