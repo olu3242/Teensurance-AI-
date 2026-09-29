@@ -1,7 +1,7 @@
 'use client';
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
-import {RoadReadyCard} from '@/components/RoadReadyCard';
+import {ScoutLearningCard} from '@/components/ScoutLearningCard';
 import {BrandLoader} from '@/components/BrandLoader';import {BrandLogo} from '@/components/BrandLogo';import {DashboardCustomizer} from '@/components/DashboardCustomizer';import {HelpChat} from '@/components/HelpChat';import {TimeCalculator} from '@/components/TimeCalculator';
 import {defaultDashboardPreferences} from '@/lib/dashboard-config';import {initialState,progress,readinessPassport,type State} from '@/lib/domain';
 const options=[{id:'review_queue',label:'Review queue'},{id:'time',label:'Practice time calculator'},{id:'family_progress',label:'Family progress'},{id:'safety',label:'Safety evidence'},{id:'coverage',label:'Coverage preparation'}];
@@ -17,5 +17,5 @@ export default function ParentDashboard(){
  {widgets.includes('family_progress')&&<section className="dashCard"><span>FAMILY PROGRESS</span><h2>{(p.verifiedMinutes/60).toFixed(1)} verified hours</h2><p>{passport.evidencePresent} of {passport.evidenceTotal} Passport evidence areas currently have evidence.</p></section>}
  {widgets.includes('safety')&&<section className="dashCard"><span>SAFETY EVIDENCE</span><h2>{state.safetyChecks.length} checks recorded</h2><p>{state.lessonAttempts.filter(x=>x.completedAt).length} learning lessons completed.</p><Link href="/learn">Review lesson program →</Link></section>}
  {widgets.includes('coverage')&&<section className="dashCard"><span>COVER / PREP</span><h2>Insurance conversation preparation</h2><p>Household and vehicle preparation only. No quote, underwriting or eligibility decision.</p><Link href="/pilot?role=parent">Open COVER journey →</Link></section>}
- <RoadReadyCard passport/></div><HelpChat context="parent-dashboard"/></main>
+ <ScoutLearningCard passport/></div><HelpChat context="parent-dashboard"/></main>
 }
