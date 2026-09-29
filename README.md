@@ -50,8 +50,8 @@ See docs/IMPLEMENTATION-W16-W30.md for the preserved operational implementation 
 
 ## Scout Learning local pilot
 
-Set `ROADREADY_LEARNING_ENABLED=true` in the local environment and open
-`/teen/scout`. The environment variable remains a temporary compatibility key until the configuration migration is completed. The default is disabled. Scout Learning uses the existing local
+Set `SCOUT_LEARNING_ENABLED=true` in the local environment and open
+`/teen/scout`. `ROADREADY_LEARNING_ENABLED` remains accepted temporarily for backward compatibility with existing deployments. The default is disabled. Scout Learning uses the existing local
 platform account API, household relationships, consent, SQLite records and audit
 trail. It does not use demo role selectors as authorization. Guardians can create
 an invitation and consent to learning through Family learning access.
