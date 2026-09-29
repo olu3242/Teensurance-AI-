@@ -1,8 +1,2 @@
 import {NextResponse} from 'next/server';
-import {createClient} from '@/lib/supabase/server';
-export async function GET(request:Request){
- const url=new URL(request.url);const code=url.searchParams.get('code');let next=url.searchParams.get('next')||'/pilot';
- if(!next.startsWith('/')||next.startsWith('//'))next='/pilot';
- if(code){const supabase=await createClient();const {error}=await supabase.auth.exchangeCodeForSession(code);if(!error)return NextResponse.redirect(new URL(next,url.origin));}
- return NextResponse.redirect(new URL('/auth/login?error=oauth_failed',url.origin));
-}
+export function GET(request:Request){return NextResponse.redirect(new URL('/auth/login',request.url))}

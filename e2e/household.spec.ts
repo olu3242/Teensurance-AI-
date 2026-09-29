@@ -38,6 +38,6 @@ test('legacy learning stays private through browser refresh and forged scope req
  expect((await (await learner.request.get('/api/lessons')).json()).attempts).toHaveLength(1);
  expect((await (await context.request.get(`/api/lessons?householdId=${householdId}&teenId=${teenId}`)).json()).attempts).toHaveLength(1);
  await register(stranger,'Unrelated');for(const path of ['pilot','lessons'])expect((await stranger.request.get(`/api/${path}?householdId=${householdId}&teenId=${teenId}`)).status()).toBe(403);
- await page.goto('/dashboard/teen');await expect(page.getByRole('heading',{name:/Your road/})).toBeVisible();await page.goto('/admin');await expect(page.getByText(/Private platform operations are unavailable/)).toBeVisible();expect(errors).toEqual([]);
+ await page.goto('/dashboard/teen');await expect(page.getByRole('heading',{name:/Your road/})).toBeVisible();await page.goto('/admin');await expect(page.getByText(/Private operations require explicitly configured/)).toBeVisible();expect(errors).toEqual([]);
  await context.close();await stranger.close();await learner.close();
 });

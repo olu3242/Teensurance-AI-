@@ -29,3 +29,7 @@ test-results/
 
 # TypeScript
 *.tsbuildinfo
+.vercel
+.env*.local
+
+.next-pilot/

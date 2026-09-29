@@ -1,10 +1,3 @@
-'use client';
-import {FormEvent,useState} from 'react';
-
-import {BrandLogo} from '@/components/BrandLogo';
-import {HelpChat} from '@/components/HelpChat';
-export default function JoinPage(){
- const [code,setCode]=useState('');const [referral,setReferral]=useState('');const message='';
- async function submit(e:FormEvent){e.preventDefault();const params=new URLSearchParams();if(code)params.set('invite',code.trim().toUpperCase());if(referral)params.set('ref',referral.trim().toUpperCase());window.location.href=`/auth/login?next=${encodeURIComponent('/join/complete?'+params.toString())}`;}
- return <main className="authPage"><BrandLogo /><form onSubmit={submit}><span>JOIN A FAMILY</span><h1>Use your invitation.</h1><p>Invitation codes connect an authenticated person to a household. Referral codes only record attribution and never grant access.</p><label>Invitation code<input required placeholder="INV-XXXXXXXX" value={code} onChange={e=>setCode(e.target.value)}/></label><label>Referral code <small>optional</small><input placeholder="REF-XXXXXXXX" value={referral} onChange={e=>setReferral(e.target.value)}/></label><button>Continue securely</button>{message&&<p>{message}</p>}</form><HelpChat context="join" /></main>
-}
+ 'use client';
+import {useState} from 'react';import {BrandLogo} from '@/components/BrandLogo';
+export default function JoinPage(){const [message,setMessage]=useState('');const [busy,setBusy]=useState(false);return <main className="authPage"><BrandLogo/><h1>Join your family</h1><p>Sign in with your own account, then use the private invitation token supplied by your guardian. The invitation determines your role.</p><a href="/auth/login?next=/join">Sign in or create account</a><form onSubmit={async e=>{e.preventDefault();const f=new FormData(e.currentTarget);setBusy(true);try{const r=await fetch('/api/workspace',{method:'POST',headers:{'content-type':'application/json','idempotency-key':crypto.randomUUID()},body:JSON.stringify({action:'invite.accept',token:f.get('token'),adultAttestation:f.get('adult')==='on'})});const b=await r.json();if(!r.ok)setMessage(b.error);else location.assign('/pilot')}catch{setMessage('Unable to accept invitation. Retry to check its status.')}finally{setBusy(false)}}}><label>Invitation token<input name="token" required autoComplete="off"/></label><label><input type="checkbox" name="adult"/>I am an adult accepting a guardian or supervisor invitation.</label><button disabled={busy}>Join household</button><p role="status">{message}</p></form></main>}

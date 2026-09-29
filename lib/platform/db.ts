@@ -1,39 +1,18 @@
-import {createRequire} from 'node:module';
-import {mkdirSync} from 'node:fs';
-import {dirname,resolve} from 'node:path';
-
-type Statement = {run(...args:unknown[]):unknown;get(...args:unknown[]):Record<string,unknown>|undefined;all(...args:unknown[]):Record<string,unknown>[]};
-export type Database = {exec(sql:string):void;prepare(sql:string):Statement;close():void};
-const databases = new Map<string,Database>();
-export function db():Database {
-  const path=resolve(process.env.TEENSURANCE_DB_PATH || 'data/teensurance.sqlite');
-  const existing=databases.get(path);if(existing)return existing;
-  mkdirSync(dirname(path),{recursive:true});
-  const {DatabaseSync}=createRequire(import.meta.url)('node:sqlite') as {DatabaseSync:new(path:string)=>Database};
-  const database=new DatabaseSync(path);
-  database.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
-    CREATE TABLE IF NOT EXISTS schema_version(version INTEGER PRIMARY KEY);
-    INSERT OR IGNORE INTO schema_version VALUES(1);
-    CREATE TABLE IF NOT EXISTS users(id TEXT PRIMARY KEY,email TEXT UNIQUE NOT NULL,password TEXT NOT NULL,name TEXT NOT NULL,created_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),expires_at TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY,kind TEXT NOT NULL,household_id TEXT NOT NULL,owner_id TEXT NOT NULL,payload TEXT NOT NULL CHECK(json_valid(payload)));
-    CREATE INDEX IF NOT EXISTS records_scope ON records(kind,household_id,owner_id);
-    CREATE TABLE IF NOT EXISTS audit(id TEXT PRIMARY KEY,at TEXT NOT NULL,actor_id TEXT NOT NULL,household_id TEXT NOT NULL,action TEXT NOT NULL,decision TEXT NOT NULL,reason TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS ledger(id TEXT PRIMARY KEY,drive_id TEXT NOT NULL,revision INTEGER NOT NULL,household_id TEXT NOT NULL,teen_id TEXT NOT NULL,minutes INTEGER NOT NULL,night_minutes INTEGER NOT NULL,actor_id TEXT NOT NULL,reason TEXT NOT NULL,at TEXT NOT NULL,UNIQUE(drive_id,revision));
-    CREATE TABLE IF NOT EXISTS requests(user_id TEXT NOT NULL,key TEXT NOT NULL,fingerprint TEXT NOT NULL,result TEXT NOT NULL,PRIMARY KEY(user_id,key));
-    CREATE TABLE IF NOT EXISTS rate_limits(key TEXT PRIMARY KEY,count INTEGER NOT NULL,reset_at INTEGER NOT NULL);
-    CREATE TRIGGER IF NOT EXISTS audit_no_update BEFORE UPDATE ON audit BEGIN SELECT RAISE(ABORT,'Audit is append only'); END;
-    CREATE TRIGGER IF NOT EXISTS audit_no_delete BEFORE DELETE ON audit BEGIN SELECT RAISE(ABORT,'Audit is append only'); END;
-    CREATE TRIGGER IF NOT EXISTS ledger_no_update BEFORE UPDATE ON ledger BEGIN SELECT RAISE(ABORT,'Ledger is append only'); END;
-    CREATE TRIGGER IF NOT EXISTS ledger_no_delete BEFORE DELETE ON ledger BEGIN SELECT RAISE(ABORT,'Ledger is append only'); END;`);
-  databases.set(path,database);return database;
-}
-export function transaction<T>(fn:()=>T):T {const database=db();database.exec('BEGIN IMMEDIATE');try{const result=fn();database.exec('COMMIT');return result}catch(error){database.exec('ROLLBACK');throw error}}
+import {AsyncLocalStorage} from 'node:async_hooks';
+import {resolve} from 'node:path';
+import {sqlite} from './persistence/sqlite';
+import {postgres} from './persistence/postgres';
+import type {Database} from './persistence/types';
+export type {Database} from './persistence/types';
+const active=new AsyncLocalStorage<Database>();
+const adapters=new Map<string,{database:Database;acquire?:ReturnType<typeof postgres>['acquire'];queue:Promise<unknown>}>();
+export function persistenceKind(){const kind=process.env.TEENSURANCE_PERSISTENCE||'sqlite';if(!['sqlite','postgres'].includes(kind))throw new Error('Invalid persistence configuration');if((process.env.VERCEL||process.env.TEENSURANCE_ENV==='production')&&kind!=='postgres')throw new Error('Hosted persistence requires PostgreSQL');return kind}
+function adapter(){const kind=persistenceKind();const key=kind==='postgres'?process.env.DATABASE_URL:resolve(process.env.TEENSURANCE_DB_PATH||'data/teensurance.sqlite');if(!key)throw new Error('PostgreSQL connection is not configured');let value=adapters.get(key);if(!value){value={...(kind==='postgres'?postgres(key):{database:sqlite(key)}),queue:Promise.resolve()};adapters.set(key,value)}return value}
+export function db():Database{const current=active.getStore();if(current)return current;const raw=adapter().database;return {dialect:raw.dialect,close:()=>raw.close(),exec:sql=>transaction(()=>db().exec(sql)),prepare(sql){return {run:(...args)=>transaction(()=>db().prepare(sql).run(...args)),get:(...args)=>transaction(()=>db().prepare(sql).get(...args)),all:(...args)=>transaction(()=>db().prepare(sql).all(...args))}}}}
+export async function transaction<T>(fn:()=>T|Promise<T>):Promise<T>{if(active.getStore())return fn();const a=adapter();const run=async()=>{const acquired=a.acquire?await a.acquire():undefined;const database=acquired?.database||a.database;try{await database.exec(database.dialect==='sqlite'?'BEGIN IMMEDIATE':'BEGIN');if(database.dialect==='postgres')await database.exec('SELECT pg_advisory_xact_lock(72697669)');return await active.run(database,async()=>{try{const result=await fn();await database.exec('COMMIT');return result}catch(error){await database.exec('ROLLBACK');throw error}})}finally{acquired?.release()}};if(a.acquire)return run();const work=a.queue.then(run,run);a.queue=work.catch(()=>{});return work}
 export type RecordBase={id:string;householdId:string;ownerId:string};
-export function put<T extends RecordBase>(kind:string,value:T){db().prepare('INSERT INTO records VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload').run(value.id,kind,value.householdId,value.ownerId,JSON.stringify(value));return value}
-export function get<T>(kind:string,id:string):T|undefined{const row=db().prepare('SELECT payload FROM records WHERE kind=? AND id=?').get(kind,id);return row?JSON.parse(String(row.payload)) as T:undefined}
-export function all<T>(kind:string,householdId?:string):T[]{const rows=householdId===undefined?db().prepare('SELECT payload FROM records WHERE kind=?').all(kind):db().prepare('SELECT payload FROM records WHERE kind=? AND household_id=?').all(kind,householdId);return rows.map(row=>JSON.parse(String(row.payload)) as T)}
-export function closeDatabases(){for(const database of databases.values())database.close();databases.clear()}
-
-// Apply ownership in SQL before materializing private learner records.
-export function owned<T>(kind:string,householdId:string,ownerId:string):T[]{return db().prepare('SELECT payload FROM records WHERE kind=? AND household_id=? AND owner_id=?').all(kind,householdId,ownerId).map(row=>JSON.parse(String(row.payload)) as T)}
+export async function put<T extends RecordBase>(kind:string,value:T){await db().prepare('INSERT INTO records(id,kind,household_id,owner_id,payload) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload').run(value.id,kind,value.householdId,value.ownerId,JSON.stringify(value));return value}
+export async function get<T>(kind:string,id:string):Promise<T|undefined>{const row=await db().prepare('SELECT payload FROM records WHERE kind=? AND id=?').get(kind,id);return row?JSON.parse(String(row.payload)) as T:undefined}
+export async function all<T>(kind:string,householdId?:string):Promise<T[]>{const rows=householdId===undefined?await db().prepare('SELECT payload FROM records WHERE kind=? ORDER BY rowid').all(kind):await db().prepare('SELECT payload FROM records WHERE kind=? AND household_id=? ORDER BY rowid').all(kind,householdId);return rows.map(row=>JSON.parse(String(row.payload)) as T)}
+export async function owned<T>(kind:string,householdId:string,ownerId:string):Promise<T[]>{return (await db().prepare('SELECT payload FROM records WHERE kind=? AND household_id=? AND owner_id=? ORDER BY rowid').all(kind,householdId,ownerId)).map(row=>JSON.parse(String(row.payload)) as T)}
+export async function closeDatabases(){for(const a of adapters.values()){await a.queue;await a.database.close()}adapters.clear()}

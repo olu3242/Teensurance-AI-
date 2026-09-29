@@ -1,20 +1,3 @@
-'use client';
-import {useState} from 'react';
-
-import {BrandLogo} from '@/components/BrandLogo';
-import {HelpChat} from '@/components/HelpChat';
-import {createClient} from '@/lib/supabase/client';
-import {supabaseConfigured} from '@/lib/supabase/config';
-
-export default function LoginPage(){
- const [busy,setBusy]=useState(false);const [error,setError]=useState('');
- async function google(){
-  if(!supabaseConfigured()){setError('Google sign-in is waiting for the Teensurance Supabase project configuration.');return}
-  setBusy(true);setError('');
-  const supabase=createClient();const next=new URLSearchParams(window.location.search).get('next')||'/pilot';
-  const redirectTo=`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-  const {error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo}});
-  if(error){setError(error.message);setBusy(false)}
- }
- return <main className="authPage"><BrandLogo /><section><span>FAMILY ACCESS</span><h1>Continue your driving journey.</h1><p>Sign in before joining or managing a family. Teensurance never uses Google profile metadata as an authorization role.</p><button onClick={google} disabled={busy}>{busy?'Connecting…':'Continue with Google'}</button>{error&&<p role="alert">{error}</p>}<small>Google OAuth must be enabled in the dedicated Teensurance Supabase project before this button can complete sign-in.</small></section><HelpChat context="auth" /></main>
-}
+ 'use client';
+import {useState} from 'react';import {BrandLogo} from '@/components/BrandLogo';
+export default function LoginPage(){const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [register,setRegister]=useState(false);return <main className="authPage"><BrandLogo/><form onSubmit={async e=>{e.preventDefault();setBusy(true);const f=new FormData(e.currentTarget);try{const r=await fetch('/api/auth',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:register?'register':'login',email:f.get('email'),password:f.get('password'),...(register?{name:f.get('name')}:{})})});const b=await r.json();if(!r.ok){setError(b.error);return}const next=new URLSearchParams(location.search).get('next');location.assign(next&&next.startsWith('/')&&!next.startsWith('//')&&!next.includes('\\')?next:'/pilot')}catch{setError('Unable to sign in. Please retry.')}finally{setBusy(false)}}}><span>FAMILY ACCESS</span><h1>{register?'Create your account':'Continue your driving journey'}</h1>{register&&<label>Name<input name="name" required minLength={2} maxLength={80}/></label>}<label>Email<input name="email" type="email" required autoComplete="email"/></label><label>Password<input name="password" type="password" required minLength={register?12:1} autoComplete={register?'new-password':'current-password'}/></label><button disabled={busy}>{register?'Create account':'Sign in'}</button><button type="button" onClick={()=>{setRegister(!register);setError('')}}>{register?'Use existing account':'Create a family account'}</button>{error&&<p role="alert">{error}</p>}</form></main>}

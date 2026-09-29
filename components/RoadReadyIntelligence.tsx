@@ -3,7 +3,7 @@ import {useCallback,useEffect,useRef,useState} from 'react';
 import Image from 'next/image';
 import type {readIntelligence} from '@/lib/roadready/intelligence-service';
 import type {PracticeSession,SafeContext} from '@/lib/roadready/intelligence-types';
-type Data=NonNullable<ReturnType<typeof readIntelligence>['data']>;
+type Data=NonNullable<Awaited<ReturnType<typeof readIntelligence>>['data']>;
 type Props={householdId:string;teenId:string;parked:boolean;onEvidence:()=>Promise<void>};
 export function RoadReadyIntelligence({householdId,teenId,parked,onEvidence}:Props){
  const [data,setData]=useState<Data|null>(null);const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [selected,setSelected]=useState('');const [targets,setTargets]=useState<string[]>([]);const [answer,setAnswer]=useState('');const [interpreted,setInterpreted]=useState(false);const [feedback,setFeedback]=useState<{correct:boolean;explanation:string;kind:string}|null>(null);const [activityContext,setActivityContext]=useState<SafeContext>('AT_HOME');const [conceptId,setConceptId]=useState('');const pending=useRef<{signature:string;key:string}>();
