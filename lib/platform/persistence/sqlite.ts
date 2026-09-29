@@ -14,6 +14,8 @@ export function sqlite(path:string):Database {
     CREATE TABLE IF NOT EXISTS waitlist_entries(id TEXT PRIMARY KEY,email TEXT UNIQUE NOT NULL,parent_name TEXT NOT NULL,teen_count INTEGER NOT NULL CHECK(teen_count BETWEEN 1 AND 10),region TEXT NOT NULL,referral_source TEXT NOT NULL DEFAULT '',status TEXT NOT NULL CHECK(status IN ('NEW','CONTACTED','INVITED','ENROLLED','DECLINED')),notes TEXT NOT NULL DEFAULT '',created_at TEXT NOT NULL,updated_at TEXT NOT NULL);
     CREATE INDEX IF NOT EXISTS waitlist_status_created ON waitlist_entries(status,created_at DESC);
     CREATE TABLE IF NOT EXISTS waitlist_events(id TEXT PRIMARY KEY,entry_id TEXT NOT NULL REFERENCES waitlist_entries(id),actor_id TEXT NOT NULL REFERENCES users(id),from_status TEXT NOT NULL,to_status TEXT NOT NULL,note TEXT NOT NULL DEFAULT '',at TEXT NOT NULL);
+    CREATE TABLE IF NOT EXISTS email_outbox(id TEXT PRIMARY KEY,event_type TEXT NOT NULL,recipient TEXT NOT NULL,subject TEXT NOT NULL,text_body TEXT NOT NULL,html_body TEXT NOT NULL,status TEXT NOT NULL CHECK(status IN ('PENDING','SENT')),attempts INTEGER NOT NULL DEFAULT 0,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,last_error TEXT NOT NULL DEFAULT '');
+    CREATE INDEX IF NOT EXISTS email_outbox_status_created ON email_outbox(status,created_at);
     CREATE TABLE IF NOT EXISTS sessions(hash TEXT PRIMARY KEY,user_id TEXT NOT NULL REFERENCES users(id),expires_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS records(id TEXT PRIMARY KEY,kind TEXT NOT NULL,household_id TEXT NOT NULL,owner_id TEXT NOT NULL,payload TEXT NOT NULL CHECK(json_valid(payload)));
     CREATE INDEX IF NOT EXISTS records_scope ON records(kind,household_id,owner_id);
