@@ -22,6 +22,8 @@ type TemplateInput={
  detail?:string;
 };
 
+export const appUrl=(path='/')=>{const base=(process.env.APP_URL||process.env.NEXT_PUBLIC_APP_URL||'').replace(/\/$/,'');return base?base+path:undefined};
+
 const esc=(value='')=>value.replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]!));
 
 function base(title:string,body:string,cta?:{label:string;url:string}){
