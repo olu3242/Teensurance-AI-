@@ -16,6 +16,8 @@ const pages=walk(join(root,'app')).filter(p=>p.endsWith('page.tsx'));
 const renderedPages=pages.filter(p=>!readFileSync(p,'utf8').includes("redirect('/teen/scout')"));
 const missing=renderedPages.filter(p=>{
  const s=readFileSync(p,'utf8');
+ // Re-export-only compatibility routes inherit branding from their canonical page.
+ if(/export\s*\{[^}]*default[^}]*\}\s*from\s*['"]/.test(s))return false;
  return !/BrandLogo|BrandMark|SiteHeader|ScoutLearning/.test(s);
 });
 
