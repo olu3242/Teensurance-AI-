@@ -1,22 +1,37 @@
-import {readFileSync} from 'node:fs';
+import {readFileSync,readdirSync,statSync} from 'node:fs';
+import {join} from 'node:path';
 
-const globals=readFileSync(new URL('../app/globals.css',import.meta.url),'utf8');
-const landing=readFileSync(new URL('../app/landing.css',import.meta.url),'utf8');
-const workspace=readFileSync(new URL('../app/pilot/workspace.css',import.meta.url),'utf8');
+const root=new URL('..',import.meta.url).pathname;
+const globals=readFileSync(join(root,'app/globals.css'),'utf8');
+const mark=readFileSync(join(root,'components/BrandMark.tsx'),'utf8');
+const logo=readFileSync(join(root,'components/BrandLogo.tsx'),'utf8');
+const loader=readFileSync(join(root,'components/BrandLoader.tsx'),'utf8');
+
+function walk(dir){
+ return readdirSync(dir).flatMap(name=>{
+  const p=join(dir,name);return statSync(p).isDirectory()?walk(p):[p];
+ });
+}
+const pages=walk(join(root,'app')).filter(p=>p.endsWith('page.tsx'));
+const renderedPages=pages.filter(p=>!readFileSync(p,'utf8').includes("redirect('/teen/scout')"));
+const missing=renderedPages.filter(p=>{
+ const s=readFileSync(p,'utf8');
+ return !/BrandLogo|BrandMark|SiteHeader|ScoutLearning/.test(s);
+});
 
 const checks=[
-  ['canonical token',globals.includes('--brand-lime: #ceff59;')],
-  ['global brand mark',/\.brandMark, \.driveMark[^}]*background: var\(--brand-lime\)/.test(globals)],
-  ['shared logo mark',/\.brandLogoMark,\.brandLoaderMark[^}]*background:var\(--brand-lime\)/.test(globals)],
-  ['inverse shared logo mark',/\.brandLogoInverse \.brandLogoMark\{background:var\(--brand-lime\)\}/.test(globals)],
-  ['brand loader mark',/\.brandLoaderMark\{[^}]*background:var\(--brand-lime\)/.test(globals)],
-  ['landing mark',/\.landing-mark[^}]*background: var\(--brand-lime\)/.test(landing)],
-  ['pilot onboarding mark',/\.onboarding \.brandMark\{background:var\(--brand-lime\)\}/.test(workspace)]
+ ['canonical token',globals.includes('--brand-lime: #ceff59;')],
+ ['canonical data mark',mark.includes('data-teensurance-brand-mark')],
+ ['global forced lime',globals.includes('background:var(--brand-lime)!important')],
+ ['shared logo uses canonical mark',logo.includes('<BrandMark className="brandLogoMark" />')],
+ ['loader uses canonical mark',loader.includes('<BrandMark className="brandLoaderMark" size="large" />')],
+ ['all rendered pages expose shared branding',missing.length===0]
 ];
 
 const failed=checks.filter(([,ok])=>!ok);
 if(failed.length){
-  console.error('Brand certification failed:',failed.map(([name])=>name).join(', '));
-  process.exit(1);
+ console.error('Brand certification failed:',failed.map(([name])=>name).join(', '));
+ if(missing.length)console.error('Pages missing shared branding:',missing.map(p=>p.replace(root,'')).join(', '));
+ process.exit(1);
 }
-console.log('Brand certification passed: every Teensurance logo mark resolves to --brand-lime (#ceff59).');
+console.log('Brand certification passed: canonical lime #ceff59 is enforced and every rendered page uses the shared Teensurance brand system.');
