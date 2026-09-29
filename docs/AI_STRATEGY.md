@@ -60,3 +60,13 @@ Key events instrumented: `journey_created`, `next_step_viewed`, `milestone_start
 - Using AI to manufacture urgency, competition, or engagement loops during or around driving.
 - Letting AI-generated content stand in for a sourced regulatory or insurance fact.
 - Exposing the agent/orchestration architecture, safety policy design, or Journey/Requirement Graph structure on any public-facing surface.
+
+## Scout learning guidance
+
+Scout recommends source-linked RoadReady concepts and explains validated answers.
+Its contract is in `lib/roadready/agent.ts`. GUARD checks authenticated scope, consent,
+driving state and permitted actions before the service executes; the result receives
+an auditable decision. Scout cannot access the database directly or create regulatory,
+insurance, eligibility or driver-ranking judgments. Recommendations sit below the
+existing journey requirement displayed first in RoadReady. Minimal educational events
+remain in household-scoped local storage; no telemetry is sent to an external vendor.

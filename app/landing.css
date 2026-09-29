@@ -14,7 +14,7 @@
 .landing-skip:focus { transform: translateY(0); }
 .landing-header { height: 77px; margin: 0 8%; display: flex; align-items: center; gap: 40px; }
 .landing-brand { display: flex; align-items: center; gap: 18px; font-size: 22px; font-weight: 700; letter-spacing: -.7px; white-space: nowrap; }
-.landing-mark { width: 34px; height: 33px; display: block; flex-shrink: 0; background: linear-gradient(115deg,#051321,#0e2333); clip-path: polygon(0 0,100% 0,100% 31%,69% 31%,69% 100%,32% 100%,32% 39%,0 39%); }
+.landing-mark { width: 34px; height: 33px; display: block; flex-shrink: 0; background: var(--brand-lime); clip-path: polygon(0 0,100% 0,100% 31%,69% 31%,69% 100%,32% 100%,32% 39%,0 39%); }
 .landing-nav { display: flex; align-items: center; gap: 35px; margin-left: auto; font-size: 14px; white-space: nowrap; }
 .landing-nav a, .landing-login { padding: 10px 0; }
 .landing-nav a:hover, .landing-login:hover { color: #53617b; }
@@ -199,3 +199,8 @@
   .landing-example-note { font-size:10px; line-height:1.5; }
 }
 @media(prefers-reduced-motion:reduce) { .landing-button { transition:none; } }
+
+.landing-faq{padding:clamp(64px,8vw,120px) 8%;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(40px,8vw,120px);border-top:1px solid var(--line)}
+.landing-faq-intro h2{font-size:clamp(44px,5vw,78px);line-height:.92;letter-spacing:-.065em;text-transform:uppercase;margin:20px 0}.landing-faq-intro h2 span{color:var(--muted)}.landing-faq-intro>p:last-child{color:var(--muted);line-height:1.6;max-width:500px}
+.landing-faq-list{border-top:1px solid var(--line)}.landing-faq-list details{border-bottom:1px solid var(--line);padding:0}.landing-faq-list summary{list-style:none;cursor:pointer;padding:24px 2px;display:flex;justify-content:space-between;gap:20px;font-size:17px;font-weight:750}.landing-faq-list summary::-webkit-details-marker{display:none}.landing-faq-list summary span{font-size:24px;font-weight:400}.landing-faq-list details[open] summary span{transform:rotate(45deg)}.landing-faq-list details p{color:var(--muted);line-height:1.65;margin:0;padding:0 40px 24px 2px}
+@media(max-width:800px){.landing-faq{grid-template-columns:1fr;padding:64px 20px;gap:35px}.landing-header{display:none}}

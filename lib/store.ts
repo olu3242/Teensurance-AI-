@@ -1,10 +1,10 @@
 import {mkdir, readFile, writeFile, rename} from 'node:fs/promises';
 import {join} from 'node:path';
-import {initialState, type State} from './domain';
+import {initialState, normalizeState, type State} from './domain';
 const filename = () => join(process.cwd(),'data','pilot.json');
 let queue:Promise<unknown> = Promise.resolve();
 export async function readState():Promise<State> {
-  try {return JSON.parse(await readFile(filename(),'utf8')) as State;}
+  try {return normalizeState(JSON.parse(await readFile(filename(),'utf8')) as Partial<State>);}
   catch (e) {if ((e as NodeJS.ErrnoException).code==='ENOENT') return initialState(); throw e;}
 }
 export function updateState<T>(change:(state:State)=>T|Promise<T>):Promise<T> {
