@@ -15,6 +15,7 @@ export function SiteHeader() {
       <Link href="/#how-it-works" onClick={close}>How it works</Link>
       <Link href="/learn" onClick={close}>Driving lessons</Link>
       <Link href="/#faq" onClick={close}>FAQ</Link>
+      <Link href="/waitlist" onClick={close}>Waitlist</Link>
     </nav>
     <div className="siteActions">
       <Link href="/join" className="siteTextLink">Join family</Link>
