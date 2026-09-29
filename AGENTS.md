@@ -80,3 +80,14 @@ T never impersonates:
 - emergency services.
 
 Each of these is modeled explicitly as an escalation target, not folded into T's own voice.
+
+
+## Competitive independence and evidence provenance
+
+Teensurance capabilities must be independently designed. Competitor products may be used to understand market problems and category expectations, but no agent or implementation workflow may copy or derive source code, UI, text, graphics, lesson content, workflows, proprietary behavior, or branding from a competitor.
+
+Authoritative jurisdiction requirements must come from official government/regulator sources and carry provenance, effective dates, versioning, and human-review state. Insurance claims must come from carriers, regulators, or approved authoritative providers.
+
+Supervised-driving logs are evidence inputs. They do not independently establish legal eligibility, safe-driver status, insurance eligibility, premium amounts, discount entitlement, or underwriting outcomes.
+
+"RoadReady" must not be used as customer-facing Teensurance branding. Existing `roadready` identifiers are legacy technical debt only; do not introduce new ones. See `docs/IP_PROVENANCE_POLICY.md` for the migration and review rules.
