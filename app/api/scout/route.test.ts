@@ -19,9 +19,9 @@ afterEach(()=>{
   rmSync(dir,{recursive:true,force:true});
 });
 
-it('matches the legacy authentication boundary for reads',()=>{
-  const scoutResponse=scout.GET(new Request('http://localhost/api/scout?role=guardian&teenId=someone'));
-  const legacyResponse=legacy.GET(new Request('http://localhost/api/roadready?role=guardian&teenId=someone'));
+it('matches the legacy authentication boundary for reads',async()=>{
+  const scoutResponse=await scout.GET(new Request('http://localhost/api/scout?role=guardian&teenId=someone'));
+  const legacyResponse=await legacy.GET(new Request('http://localhost/api/roadready?role=guardian&teenId=someone'));
   expect(scoutResponse.status).toBe(legacyResponse.status);
   expect(scoutResponse.status).toBe(401);
   expect(scoutResponse.headers.get('cache-control')).toBe('no-store');
