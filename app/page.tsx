@@ -32,7 +32,7 @@ export default function LandingPage() {
             <h1 id="hero-heading">YOUR ROAD<br /><span>STARTS HERE<span className="landing-period">.</span></span></h1>
             <p className="landing-tagline">Know what’s next. Track your progress. Get there safely.</p>
             <p className="landing-description">From first permit to confident driving, Teensurance helps<br className="landing-desktop-break" /> young drivers and their families navigate every step ahead.</p>
-            <div className="landing-actions"><Link href="/auth/login?next=%2Fpilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/join" className="landing-parent">I have an invite</Link></div>
+            <div className="landing-actions"><Link href="/auth/login?next=%2Fpilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/waitlist" className="landing-parent">Join waitlist</Link><Link href="/join" className="landing-parent">I have an invite</Link></div>
           </div>
           <div className="landing-stories" role="region" aria-roledescription="carousel" aria-label="Your road ahead">
             <div className="landing-story-grid" aria-live="polite">
