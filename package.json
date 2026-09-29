@@ -16,9 +16,10 @@
     "roadready:certify": "node scripts/roadready-certify.mjs",
     "security:certify": "vitest run lib/platform/legacy-security.test.ts lib/platform/service.test.ts app/api/workspace/route.test.ts lib/roadready/roadready.test.ts app/api/roadready/route.test.ts lib/roadready/intelligence.test.ts app/api/roadready/intelligence/route.test.ts",
     "roadready:intelligence:certify": "npm run roadready:certify",
-    "test:scout": "vitest run lib/roadready/roadready.test.ts app/api/roadready/route.test.ts",
+    "test:scout": "vitest run lib/roadready/roadready.test.ts app/api/scout/route.test.ts app/api/scout/intelligence/route.test.ts",
     "test:scout:e2e": "playwright test --config=playwright.roadready.config.ts",
-    "scout:certify": "node scripts/roadready-certify.mjs"
+    "scout:certify": "node scripts/scout-certify.mjs",
+    "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
