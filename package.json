@@ -23,7 +23,8 @@
     "test:scout:e2e": "playwright test --config=playwright.roadready.config.ts",
     "scout:certify": "node scripts/scout-certify.mjs",
     "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs",
-    "test:waitlist": "vitest run lib/waitlist/service.test.ts"
+    "test:waitlist": "vitest run lib/waitlist/service.test.ts",
+    "brand:certify": "node scripts/brand-certify.mjs"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
