@@ -7,7 +7,7 @@ import type {Dashboard,Drive,Evidence,Household,Invite,Member,Profile,Relationsh
 import {ageOn,journey} from './journey';
 import {texasRule} from './texas';
 import {agentContracts} from './agents';
-import {can,criticalProfileFields} from './permissions';
+import {can,criticalProfileFields,permissionForAction} from './permissions';
 
 const now=()=>new Date().toISOString();
 const base=(householdId:string,ownerId:string)=>({id:randomUUID(),householdId,ownerId});
@@ -27,9 +27,14 @@ async function assertNoOverlap(teenId:string,start:string,end:string,exceptId?:s
 
 async function policy(user:User,c:Command):Promise<{decision:SafetyDecision;reason:string}>{
  if((await activeFor(user.id))&&!['drive.end','drive.cancel'].includes(c.action))return {decision:'DEFER',reason:'Your drive comes first. Resume after parking.'};
- if('householdId'in c&&!(await membership(user.id,c.householdId)))return {decision:'DENY',reason:'Household access denied.'};
+ if('householdId'in c){
+  const member=await membership(user.id,c.householdId);
+  if(!member)return {decision:'DENY',reason:'Household access denied.'};
+  const required=permissionForAction(c.action);
+  if(required&&!can(member.role,required.resource,required.operation))return {decision:'DENY',reason:`${member.role} persona cannot ${required.operation} ${required.resource}.`};
+ }
  if('householdId'in c&&'teenId'in c&&c.teenId){const p=(await profile(c.householdId,c.teenId));if(p&&!processingAllowed(p)&&!['profile.save','consent.set','invite.create','sharing.set'].includes(c.action))return {decision:'REQUIRE_CONSENT',reason:'A guardian must grant practice and journey consent first.'}}
- return {decision:'ALLOW',reason:'Authenticated action passes initial safety checks.'};
+ return {decision:'ALLOW',reason:'Authenticated action passes persona and safety checks.'};
 }
 
 export async function execute(user:User,c:Command,key:string){return (await transaction(async ()=>{
