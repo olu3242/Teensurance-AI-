@@ -7,6 +7,7 @@ import type {Dashboard,Drive,Evidence,Household,Invite,Member,Profile,Relationsh
 import {ageOn,journey} from './journey';
 import {texasRule} from './texas';
 import {agentContracts} from './agents';
+import {can,criticalProfileFields} from './permissions';
 
 const now=()=>new Date().toISOString();
 const base=(householdId:string,ownerId:string)=>({id:randomUUID(),householdId,ownerId});
@@ -65,12 +66,20 @@ async function apply(user:User,c:Command):Promise<unknown>{
  }
  if(c.action==='profile.save'){
   const member=(await membership(user.id,c.householdId))!;const teen=(await membership(c.teenId,c.householdId));if(teen?.role!=='teen')fail('Select a teen member.',400);
-  const existing=(await profile(c.householdId,c.teenId));if(existing)(await scope(user,c.householdId,c.teenId));else if(user.id!==c.teenId&&!(await connected(user.id,c.teenId,c.householdId,'guardian')))fail('Only this driver or their guardian can create the profile.');
+  const existing=(await profile(c.householdId,c.teenId));
+  if(existing)(await scope(user,c.householdId,c.teenId));else if(!(member.role==='guardian'&&await connected(user.id,c.teenId,c.householdId,'guardian')))fail('A linked guardian must create the driver profile.');
   if(member.role==='supervisor')fail('Supervisors cannot edit profiles.');
+  if(!existing&&!can(member.role,'profile.critical','create'))fail('This persona cannot create critical driver profile fields.');
+  if(existing&&member.role==='teen'){
+   if(user.id!==c.teenId)fail('Teen drivers can only edit their own profile.');
+   const changedCritical=criticalProfileFields.filter(field=>existing[field]!==c[field]);
+   if(changedCritical.length)fail('A guardian must update critical driver profile values.');
+   if(!can(member.role,'profile.identity','edit'))fail('Profile edit denied.');
+  }
+  if(existing&&member.role==='guardian'&&!can(member.role,'profile.critical','edit'))fail('Critical profile edit denied.');
   if((await activeFor(c.teenId)))fail('Profile changes are deferred until the drive is finished.');
   const age=ageOn(c.birthDate);if(age<13||age>25)fail('This local MVP supports drivers ages 13–25.',400);
   if(existing&&existing.birthDate!==c.birthDate)fail('Birth date changes require an operator review.');
-  if(existing&&member.role==='teen'&&existing.goalMinutes!==c.goalMinutes&&age<18)fail('A guardian sets the family goal.');
   if(c.permitDate&&c.permitDate<c.birthDate)fail('Permit date must follow birth date.',400);
   return (await put<Profile>('profile',{...(existing||base(c.householdId,c.teenId)),name:c.name,birthDate:c.birthDate,jurisdiction:c.jurisdiction,stage:c.stage,goalMinutes:c.goalMinutes,permitDate:c.permitDate,suspensionDays:c.suspensionDays,consent:existing?.consent||false,consentVersion:'practice-journey-v1',adultSharing:existing?.adultSharing||false}));
  }
