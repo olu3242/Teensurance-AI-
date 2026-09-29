@@ -4,7 +4,7 @@ import {BrandLogo} from './BrandLogo';
 export function SiteFooter() {
  const waitlistMode=process.env.NEXT_PUBLIC_WAITLIST_MODE!=='false';
  return <footer className="siteFooter">
-  <div className="siteFooterBrand"><BrandLogo inverse/><p>Helping families build safer, clearer paths from learner to independent driver.</p></div>
+  <div className="siteFooterBrand"><BrandLogo href="/" inverse/><p>Helping families build safer, clearer paths from learner to independent driver.</p></div>
   <nav aria-label="Footer navigation">
    {waitlistMode?<><Link href="/waitlist">Join waitlist</Link><Link href="/#faq">FAQ</Link></>:<><Link href="/#how-it-works">How it works</Link><Link href="/#faq">FAQ</Link><Link href="/join">Join a family</Link><Link href="/auth/login">Log in</Link></>}
   </nav>
