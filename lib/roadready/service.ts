@@ -26,12 +26,12 @@ const now=()=>new Date().toISOString();
 const base=(householdId:string,ownerId:string)=>({id:randomUUID(),householdId,ownerId});
 function fail(message:string,status=403):never{throw new AppError(message,status)}
 class GuardFailure extends AppError {constructor(message:string,public decision:SafetyDecision){super(message,403)}}
-export const roadreadyEnabled=()=>process.env.ROADREADY_LEARNING_ENABLED==='true';
+export const roadreadyEnabled=()=>process.env.SCOUT_LEARNING_ENABLED==='true'||process.env.ROADREADY_LEARNING_ENABLED==='true';
 async function ensureEvidenceProtection(){
  (await migrateRoadReady(db()));
 }
 async function authorize(user:User,householdId:string,teenId:string,action:string){
- if(!roadreadyEnabled())fail('RoadReady is not enabled for this pilot.',404);
+ if(!roadreadyEnabled())fail('Scout Learning is not enabled for this pilot.',404);
  const {member,profile:p,guardian}=(await authorizeLearner(user,householdId,teenId));
  await requirePilotAccess(householdId);
  if(ageOn(p.birthDate)<18&&!p.consent)throw new GuardFailure('Guardian consent is required.','REQUIRE_CONSENT');

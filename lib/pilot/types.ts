@@ -5,4 +5,4 @@ export type Cohort=RecordBase&{name:string;status:'planned'|'active'|'completed'
 export type Enrollment=RecordBase&{cohortId:string;status:PilotStatus;jurisdiction:string;acknowledgedAt?:string;ackVersion?:string;orientation:boolean;createdAt:string;updatedAt:string};
 export type PilotInvite=RecordBase&{hash:string;email:string;cohortId:string;expiresAt:string;acceptedBy?:string;status:'invited'|'consumed'};
 export const acknowledgementVersion='pilot-safety-v1';
-export const acknowledgements=['Teensurance is not an insurer.','RoadReady is educational and does not certify legal driving eligibility.','Do not use the app while driving.','Guardians remain responsible for supervised practice.','The pilot may evolve during testing.'];
+export const acknowledgements=['Teensurance is not an insurer.','Scout Learning is educational and does not certify legal driving eligibility.','Do not use the app while driving.','Guardians remain responsible for supervised practice.','The pilot may evolve during testing.'];

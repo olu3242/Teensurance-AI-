@@ -18,9 +18,15 @@
     "roadready:intelligence:certify": "npm run roadready:certify",
     "persistence:certify": "vitest run --config vitest.persistence.config.ts && vitest run --config vitest.postgres.config.ts",
     "roadready:content:certify": "vitest run --config vitest.content.config.ts && vitest run lib/roadready/review.test.ts",
-    "pilot:certify": "vitest run lib/pilot/service.test.ts lib/platform/operations.test.ts && playwright test --config=playwright.pilot.config.ts"
+    "pilot:certify": "vitest run lib/pilot/service.test.ts lib/platform/operations.test.ts && playwright test --config=playwright.pilot.config.ts",
+    "test:scout": "vitest run lib/roadready/roadready.test.ts app/api/scout/route.test.ts app/api/scout/intelligence/route.test.ts",
+    "test:scout:e2e": "playwright test --config=playwright.roadready.config.ts",
+    "scout:certify": "node scripts/scout-certify.mjs",
+    "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs"
   },
   "dependencies": {
+    "@neon/config": "^1.8.2",
+    "@neon/env": "^1.4.7",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",
     "next": "^15.0.0",

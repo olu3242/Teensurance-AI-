@@ -1,6 +1,6 @@
  'use client';
 import {useEffect,useState} from 'react';
-import type {inspectReviews} from '@/lib/roadready/review-service';
+import type {inspectReviews} from '@/lib/scout/review-service';
 type Item=Awaited<ReturnType<typeof inspectReviews>>[number];
 export function ContentReview(){const [items,setItems]=useState<Item[]>([]);const [message,setMessage]=useState('Loading authorized review queue...');const [busy,setBusy]=useState(false);
  async function load(){const r=await fetch('/api/admin/content');const b=await r.json();if(!r.ok){setItems([]);setMessage(b.error);return}setItems(b.items);setMessage('Review original content and its linked source. Automated validation is not human approval.')}

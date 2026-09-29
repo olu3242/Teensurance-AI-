@@ -30,7 +30,7 @@ const now=()=>new Date().toISOString();
 const base=(householdId:string,ownerId:string)=>({id:randomUUID(),householdId,ownerId});
 function deny(message='Learning access denied.',status=403):never{throw new AppError(message,status)}
 async function context(user:User,householdId:string,teenId:string){
- if(process.env.ROADREADY_LEARNING_ENABLED!=='true')deny('RoadReady is disabled.',404);
+ if(process.env.SCOUT_LEARNING_ENABLED!=='true'&&process.env.ROADREADY_LEARNING_ENABLED!=='true')deny('Scout Learning is disabled.',404);
  const ctx=(await authorizeLearner(user,householdId,teenId));
  await requirePilotAccess(householdId);
  if(ageOn(ctx.profile.birthDate)<18&&!ctx.profile.consent)deny('Guardian consent is required.');
