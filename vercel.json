@@ -4,5 +4,11 @@
     "deploymentEnabled": {
       "mvp-integration-w100": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/internal/email",
+      "schedule": "*/15 * * * *"
+    }
+  ]
 }
