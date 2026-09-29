@@ -20,6 +20,7 @@ const milestones = ['Permit', 'Learn', 'Practice', 'License', 'Covered', 'Go fur
 
 export default function LandingPage() {
   const [slide, setSlide] = useState(0);
+  const waitlistMode=process.env.NEXT_PUBLIC_WAITLIST_MODE!=='false';
 
   return (
     <div className="landing">
@@ -32,7 +33,7 @@ export default function LandingPage() {
             <h1 id="hero-heading">YOUR ROAD<br /><span>STARTS HERE<span className="landing-period">.</span></span></h1>
             <p className="landing-tagline">Know what’s next. Track your progress. Get there safely.</p>
             <p className="landing-description">From first permit to confident driving, Teensurance helps<br className="landing-desktop-break" /> young drivers and their families navigate every step ahead.</p>
-            <div className="landing-actions"><Link href="/auth/login?next=%2Fpilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/waitlist" className="landing-parent">Join waitlist</Link><Link href="/join" className="landing-parent">I have an invite</Link></div>
+            <div className="landing-actions">{waitlistMode?<><Link href="/waitlist" className="landing-button">Join the waitlist <Arrow /></Link><span className="landing-parent" style={{borderBottom:0,color:'var(--muted)'}}>Pilot access is currently closed</span></>:<><Link href="/auth/login?next=%2Fpilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/join" className="landing-parent">I have an invite</Link></>}</div>
           </div>
           <div className="landing-stories" role="region" aria-roledescription="carousel" aria-label="Your road ahead">
             <div className="landing-story-grid" aria-live="polite">
