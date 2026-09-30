@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import {useEffect,useState} from 'react';
 
 type SaveView={
@@ -28,5 +29,6 @@ export function SaveSavingsCard({householdId}:{householdId?:string}){
    {data.latestDecision&&<p><strong>Next best savings action:</strong> {data.latestDecision.reason}</p>}
    {data.opportunities[0]&&<p className="muted">{data.opportunities[0].nextAction}</p>}
    <small>Potential and quoted savings are not counted as verified savings. Comparable coverage and carrier/quote evidence are required.</small>
+   <Link className="secondary" href="/dashboard/parent/save">Open SAVE workspace →</Link>
  </section>;
 }
