@@ -4,3 +4,8 @@ export * from './agent';
 export * from './events';
 export * from './orchestrator';
 export * from './ledger';
+export * from './policy-document';
+export * from './vehicle';
+export * from './quotes';
+export * from './passport';
+export * from './integration-service';
