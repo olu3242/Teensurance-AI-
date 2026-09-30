@@ -4,6 +4,7 @@ import {dashboard} from '@/lib/platform/service';
 import {AppError} from '@/lib/platform/auth';
 import type {User} from '@/lib/platform/types';
 import {getNextBestSavingsAction} from './agent';
+import {calculateVerifiedSavings} from './ledger';
 import type {PolicyBaseline,SavingsFacts,SavingsOpportunity,SavingsDecision} from './types';
 
 type StoredBaseline=PolicyBaseline&{id:string;ownerId:string};
@@ -64,12 +65,9 @@ export async function verifySavings(user:User,householdId:string,quoteId:string)
  await requireGuardian(user,householdId);
  const baseline=(await all<StoredBaseline>('save_policy_baseline',householdId))[0];
  const quote=(await all<ComparableQuote>('save_quote',householdId)).find(x=>x.id===quoteId);
- if(!baseline||typeof baseline.annualPremium!=='number')throw new AppError('A premium-bearing policy baseline is required before savings can be verified.',409);
- if(!baseline.coverageFingerprint)throw new AppError('The baseline needs a comparable coverage fingerprint.',409);
- if(!quote)throw new AppError('Comparable quote not found.',404);
- if(quote.source!=='carrier'&&quote.source!=='quote')throw new AppError('Only carrier or quote evidence can verify savings.',409);
- if(quote.coverageFingerprint!==baseline.coverageFingerprint)throw new AppError('Savings cannot be verified across materially different coverage configurations.',409);
- const annualSavings=Math.max(0,baseline.annualPremium-quote.annualPremium);
+ const verification=calculateVerifiedSavings(baseline,quote);
+ if(!verification.verified)throw new AppError(verification.reason,409);
+ const annualSavings=verification.annualSavings;
  const existing=(await all<VerifiedSavingsLedgerEntry>('save_ledger',householdId)).find(x=>x.baselineId===baseline.id&&x.quoteId===quote.id);
  if(existing)return existing;
  const entry:VerifiedSavingsLedgerEntry={
