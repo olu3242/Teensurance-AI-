@@ -1,0 +1,35 @@
+name: Waitlist hosted repair
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    env:
+      DATABASE_MIGRATION_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Check required migration connection
+        shell: bash
+        run: |
+          if [[ -z "$DATABASE_MIGRATION_URL" ]]; then
+            echo "::error::Configure DATABASE_MIGRATION_URL in the production environment before running this repair."
+            exit 1
+          fi
+      - name: Apply idempotent waitlist repair
+        run: node scripts/postgres-hosted-waitlist-repair.mjs
+      - name: Read-only verification
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_MIGRATION_URL }}
+        run: npm run waitlist:hosted:check
