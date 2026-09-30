@@ -9,6 +9,10 @@
     {
       "path": "/api/internal/email",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/internal/save",
+      "schedule": "0 14 * * *"
     }
   ]
 }
