@@ -67,13 +67,14 @@ export async function verifySavings(user:User,householdId:string,quoteId:string)
  const quote=(await all<ComparableQuote>('save_quote',householdId)).find(x=>x.id===quoteId);
  const verification=calculateVerifiedSavings(baseline,quote);
  if(!verification.verified)throw new AppError(verification.reason,409);
+ if(!quote)throw new AppError('A carrier or quote result is required.',409);
  const annualSavings=verification.annualSavings;
  const existing=(await all<VerifiedSavingsLedgerEntry>('save_ledger',householdId)).find(x=>x.baselineId===baseline.id&&x.quoteId===quote.id);
  if(existing)return existing;
  const entry:VerifiedSavingsLedgerEntry={
    id:randomUUID(),householdId,ownerId:user.id,baselineId:baseline.id,quoteId:quote.id,
-   previousAnnualPremium:baseline.annualPremium,newAnnualPremium:quote.annualPremium,
-   annualSavings,coverageFingerprint:baseline.coverageFingerprint,status:'verified',verifiedAt:new Date().toISOString()
+   previousAnnualPremium:verification.previousAnnualPremium,newAnnualPremium:verification.newAnnualPremium,
+   annualSavings,coverageFingerprint:verification.coverageFingerprint,status:'verified',verifiedAt:new Date().toISOString()
  };
  await put('save_ledger',entry);
  return entry;
