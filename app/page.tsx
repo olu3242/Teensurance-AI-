@@ -7,6 +7,7 @@ import './landing.css';
 import {SiteHeader} from '@/components/SiteHeader';
 import {SiteFooter} from '@/components/SiteFooter';
 import {HelpChat} from '@/components/HelpChat';
+import {DynamicJourneyFlow} from '@/components/DynamicJourneyFlow';
 
 function Arrow() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -16,8 +17,7 @@ const stories = [
   { number: '01', title: <>Build<br />confidence</>, description: 'Supervised practice, one drive at a time.', image: 'driver', alt: 'Young driver focusing on the road in the evening light.' },
   { number: '02', title: <>A clearer<br />path ahead</>, description: 'Know what’s next for licensing and insurance.', image: 'family', alt: 'A father and son preparing for a practice drive together.' },
 ];
-const milestones = ['Permit', 'Learn', 'Practice', 'License', 'Covered', 'Go further'];
-
+ 
 export default function LandingPage() {
   const [slide, setSlide] = useState(0);
   const waitlistMode=process.env.NEXT_PUBLIC_WAITLIST_MODE!=='false';
@@ -50,10 +50,7 @@ export default function LandingPage() {
             <div className="landing-carousel-dots">{stories.map((story, index) => <button key={story.number} aria-label={`Show story ${index + 1} first`} aria-pressed={slide === index} className={slide === index ? 'is-active' : ''} onClick={() => setSlide(index)} />)}</div>
           </div>
         </section>
-        <nav id="how-it-works" className="landing-roadmap" aria-label="The driving journey">
-          <ol>{milestones.map((milestone, index) => <li key={milestone} className={index < 2 ? 'is-complete' : index === 2 ? 'is-current' : ''}><Link href={`/pilot?step=${Math.min(index, 4)}`}><span className="landing-milestone-dot" aria-hidden="true">{index < 2 ? <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="m3 8 3 3 7-7" stroke="currentColor" strokeWidth="1.6" /></svg> : null}</span><span className="landing-milestone-label"><span>0{index + 1}</span><strong>{milestone}</strong></span></Link></li>)}</ol>
-          <span className="landing-roadmap-arrow" aria-hidden="true"><Arrow /></span>
-        </nav>
+        <div id="how-it-works"><DynamicJourneyFlow waitlistMode={waitlistMode}/></div>
         <section className="landing-miles" id="about" aria-labelledby="miles-heading">
           <div className="landing-miles-inner">
             <div className="landing-miles-intro"><p className="landing-eyebrow">MILES</p><h2 id="miles-heading">TRACK THE<br />HOURS.<br /><span>NOT THE MATH.</span></h2><p className="landing-miles-description">Start the drive. Put the phone away.<br />We’ll keep the session organized.</p><Link href="/pilot?mode=drive" className="landing-button">Start drive <Arrow /></Link></div>

@@ -11,7 +11,7 @@ try{await client.connect();await client.query('BEGIN');await client.query('SELEC
  await client.query('CREATE SCHEMA IF NOT EXISTS teensurance_migrations');
  await client.query('REVOKE ALL ON SCHEMA teensurance_migrations FROM PUBLIC');
  await client.query('CREATE TABLE IF NOT EXISTS teensurance_migrations.history(id text PRIMARY KEY,checksum text NOT NULL,applied_at timestamptz NOT NULL DEFAULT now())');
- for(const id of ['001_operational_postgres','002_runtime_role','003_legacy_membership_lockdown','004_operational_errors','005_waitlist']){
+ for(const id of ['001_operational_postgres','002_runtime_role','003_legacy_membership_lockdown','004_operational_errors','005_waitlist','006_email_outbox']){
  const sql=readFileSync(new URL(`../migrations/${id}.sql`,import.meta.url),'utf8');const checksum=createHash('sha256').update(sql).digest('hex');
  const prior=await client.query('SELECT checksum FROM teensurance_migrations.history WHERE id=$1',[id]);
  if(prior.rows.length){if(prior.rows[0].checksum!==checksum)throw new Error('Applied migration checksum differs; forward migration required.');console.log(`${id} already applied; checksum verified.`);}
