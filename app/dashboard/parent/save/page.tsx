@@ -3,6 +3,7 @@ import {FormEvent,useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {BrandLoader} from '@/components/BrandLoader';
 import {BrandLogo} from '@/components/BrandLogo';
+import {SaveTransactionCenter} from '@/components/SaveTransactionCenter';
 
 type SaveData={
  baseline?:{carrierName?:string;annualPremium?:number;renewalDate?:string;coverageFingerprint?:string;deductible?:number;drivers:number;vehicles:number};
@@ -96,7 +97,9 @@ export default function ParentSaveWorkspace(){
 
    <section className="dashCard savePanel"><span>07 / RENEWAL</span><h2>{data?.baseline?.renewalDate||'Renewal date not recorded'}</h2><p>{data?.baseline?.renewalDate?'SAVE will treat the 60-day window as a re-shopping checkpoint.':'Add the renewal date to your policy baseline to activate renewal monitoring.'}</p></section>
 
-   <section className="dashCard savePanel wideCard"><span>08 / VERIFIED SAVINGS LEDGER</span><h2>Measured family savings</h2>{data?.verifiedSavings.length?data.verifiedSavings.map(x=><div className="saveTableRow" key={x.id}><div><strong>{money.format(x.annualSavings)} annual savings</strong><span>{money.format(x.previousAnnualPremium)} → {money.format(x.newAnnualPremium)}</span></div><div><b>verified</b><small>{new Date(x.verifiedAt).toLocaleDateString()}</small></div></div>):<p>No verified savings yet. Estimates and opportunities are intentionally excluded.</p>}</section>
+   {householdId&&<SaveTransactionCenter householdId={householdId} quotes={data?.quotes||[]} onChanged={()=>refresh(householdId)}/>} 
+
+   <section className="dashCard savePanel wideCard"><span>10 / VERIFIED SAVINGS LEDGER</span><h2>Measured family savings</h2>{data?.verifiedSavings.length?data.verifiedSavings.map(x=><div className="saveTableRow" key={x.id}><div><strong>{money.format(x.annualSavings)} annual savings</strong><span>{money.format(x.previousAnnualPremium)} → {money.format(x.newAnnualPremium)}</span></div><div><b>verified</b><small>{new Date(x.verifiedAt).toLocaleDateString()}</small></div></div>):<p>No verified savings yet. Estimates and opportunities are intentionally excluded.</p>}</section>
   </div>
  </main>;
 }
