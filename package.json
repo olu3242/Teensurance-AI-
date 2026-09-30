@@ -25,7 +25,9 @@
     "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs",
     "test:waitlist": "vitest run lib/waitlist/service.test.ts",
     "brand:certify": "node scripts/brand-certify.mjs",
-    "save:certify": "node scripts/save-certify.mjs"
+    "save:certify": "node scripts/save-certify.mjs",
+    "test:save:e2e": "playwright test --config=playwright.save.config.ts",
+    "save:mvp:certify": "npm run typecheck && npm run lint && npm run test && npm run build:cert && npm run save:certify && npm run test:save:e2e"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
