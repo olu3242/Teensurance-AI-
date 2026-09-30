@@ -1,7 +1,7 @@
 import type {Role} from './types';
 
 export type CredOperation='create'|'read'|'edit'|'delete';
-export type PermissionResource='profile.identity'|'profile.critical'|'practice'|'evidence'|'consent'|'relationship'|'household'|'reminder';
+export type PermissionResource='profile.identity'|'profile.critical'|'practice'|'evidence'|'consent'|'relationship'|'household'|'reminder'|'insurance.savings';
 
 const matrix:Record<Role,Record<PermissionResource,readonly CredOperation[]>>={
  guardian:{
@@ -12,7 +12,8 @@ const matrix:Record<Role,Record<PermissionResource,readonly CredOperation[]>>={
   consent:['read','edit'],
   relationship:['create','read','edit'],
   household:['create','read','edit'],
-  reminder:['create','read','edit']
+  reminder:['create','read','edit'],
+  'insurance.savings':['create','read','edit','delete']
  },
  teen:{
   'profile.identity':['read','edit'],
@@ -22,7 +23,8 @@ const matrix:Record<Role,Record<PermissionResource,readonly CredOperation[]>>={
   consent:['read'],
   relationship:['read'],
   household:['read'],
-  reminder:['create','read','edit']
+  reminder:['create','read','edit'],
+  'insurance.savings':[]
  },
  supervisor:{
   'profile.identity':[],
@@ -32,7 +34,8 @@ const matrix:Record<Role,Record<PermissionResource,readonly CredOperation[]>>={
   consent:[],
   relationship:['read'],
   household:['read'],
-  reminder:[]
+  reminder:[],
+  'insurance.savings':[]
  }
 };
 

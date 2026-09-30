@@ -10,6 +10,7 @@ export const agentRegistry:AgentContract[]=[
  {id:'CRUZE',purpose:'Parked pre-drive planning and post-drive reflection.',allowedActions:['plan','safety','reflect'],prohibitedWhileDriving:true},
  {id:'GO',purpose:'Licensing milestone guidance using verified rules only.',allowedActions:['jurisdiction'],prohibitedWhileDriving:true},
  {id:'COVER',purpose:'Parent insurance preparation and education.',allowedActions:['cover'],prohibitedWhileDriving:true},
+ {id:'SAVE',purpose:'Parent-facing insurance cost strategy and next-best-savings-action orchestration.',allowedActions:[],prohibitedWhileDriving:true},
  {id:'GUARD',purpose:'Deterministic safety kernel governing every action.',allowedActions:[],prohibitedWhileDriving:false}
 ];
 

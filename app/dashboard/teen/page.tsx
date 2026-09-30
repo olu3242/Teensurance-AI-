@@ -7,6 +7,7 @@ import {BrandLogo} from '@/components/BrandLogo';
 import {DashboardCustomizer} from '@/components/DashboardCustomizer';
 import {HelpChat} from '@/components/HelpChat';
 import {TimeCalculator} from '@/components/TimeCalculator';
+import {TeenInsuranceBoundaryCard} from '@/components/TeenInsuranceBoundaryCard';
 import {defaultDashboardPreferences} from '@/lib/dashboard-config';
 import {initialState,progress,readinessPassport,type State} from '@/lib/domain';
 import {lessonProgress} from '@/lib/driving-lessons';
@@ -27,5 +28,6 @@ export default function TeenDashboard(){
  {widgets.includes('passport')&&<section className="dashCard"><span>PASSPORT</span><h2>{passport.evidencePresent} / {passport.evidenceTotal} evidence areas</h2><p>{passport.nextSafeStep}</p><Link href="/pilot?tab=passport">View evidence →</Link></section>}
  {widgets.includes('recent_drives')&&<section className="dashCard"><span>MILES / RECENT</span><h2>Practice history</h2>{state.logs.slice(0,4).map(l=><p key={l.id}><strong>{l.skill}</strong> · {l.minutes} min · {l.status}</p>)}{!state.logs.length&&<p>No practice logged yet.</p>}</section>}
  {widgets.includes('safety')&&<section className="dashCard wideCard"><span>ACE / DRIVING LESSONS</span><h2>Learn before you practice.</h2><div className="lessonMiniGrid">{lessons.slice(0,4).map(l=><article key={l.id}><small>{l.id} · {l.status.replace('_',' ')}</small><strong>{l.title}</strong><p>{l.objective}</p></article>)}</div><Link href="/learn">Open all lessons & scenarios →</Link></section>}
+ <TeenInsuranceBoundaryCard/>
  </div><HelpChat context="teen-dashboard"/></main>
 }

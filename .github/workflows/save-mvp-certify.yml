@@ -1,0 +1,68 @@
+name: SAVE MVP certify
+
+on:
+  pull_request:
+    paths:
+      - 'lib/save/**'
+      - 'app/api/save/**'
+      - 'app/dashboard/parent/save/**'
+      - 'components/Save**'
+      - 'e2e/save.spec.ts'
+      - 'playwright.save.config.ts'
+      - 'validation/save-persistence.test.ts'
+      - 'scripts/save-certify.mjs'
+      - '.github/workflows/save-mvp-certify.yml'
+  push:
+    branches:
+      - main
+      - feat/save-agent-foundation
+    paths:
+      - 'lib/save/**'
+      - 'app/api/save/**'
+      - 'app/dashboard/parent/save/**'
+      - 'components/Save**'
+      - 'e2e/save.spec.ts'
+      - 'playwright.save.config.ts'
+      - 'validation/save-persistence.test.ts'
+      - 'scripts/save-certify.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  save-certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build:cert
+      - run: npm run save:certify
+      - run: npm run test:save:e2e
+
+  hosted-readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Report external integration readiness
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          TEENSURANCE_CARRIER_ADAPTERS: ${{ secrets.TEENSURANCE_CARRIER_ADAPTERS }}
+        run: node scripts/save-hosted-readiness.mjs

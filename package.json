@@ -24,7 +24,12 @@
     "scout:certify": "node scripts/scout-certify.mjs",
     "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs",
     "test:waitlist": "vitest run lib/waitlist/service.test.ts",
-    "brand:certify": "node scripts/brand-certify.mjs"
+    "brand:certify": "node scripts/brand-certify.mjs",
+    "save:certify": "node scripts/save-certify.mjs",
+    "test:save:e2e": "playwright test --config=playwright.save.config.ts",
+    "save:mvp:certify": "npm run typecheck && npm run lint && npm run test && npm run build:cert && npm run save:certify && npm run test:save:e2e",
+    "waitlist:hosted:check": "node scripts/waitlist-hosted-check.mjs",
+    "waitlist:hosted:repair": "node scripts/postgres-hosted-waitlist-repair.mjs"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
