@@ -1,7 +1,7 @@
 import type {Decision,DrivingState,Role,State} from '@/lib/domain';
 
-export type AgentId='T'|'VIBE'|'READY'|'ACE'|'MILES'|'CRUZE'|'GO'|'COVER'|'GUARD';
-export type WorkflowId='onboarding'|'permit'|'learning'|'practice'|'verification'|'reflection'|'licensing'|'coverage';
+export type AgentId='T'|'VIBE'|'READY'|'ACE'|'MILES'|'CRUZE'|'GO'|'COVER'|'SAVE'|'GUARD';
+export type WorkflowId='onboarding'|'permit'|'learning'|'practice'|'verification'|'reflection'|'licensing'|'coverage'|'savings';
 export type WorkflowState='CREATED'|'ASSESSING'|'READY'|'IN_PROGRESS'|'AWAITING_EVIDENCE'|'AWAITING_VERIFICATION'|'VERIFIED'|'COMPLETED'|'HANDOFF'|'BLOCKED'|'DEFERRED'|'DISPUTED'|'REQUIRES_PARENT'|'REQUIRES_CONSENT'|'REQUIRES_OFFICIAL_SOURCE'|'REQUIRES_HUMAN_REVIEW'|'CANCELLED';
 export type TriggerPriority='P0'|'P1'|'P2'|'P3'|'P4'|'P5'|'P6'|'P7'|'P8'|'P9';
 
