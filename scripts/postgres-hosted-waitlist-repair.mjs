@@ -43,6 +43,15 @@ try{
   runtimeRoleExists=true;
  }
 
+ const appRole='teensurance_app';
+ const appRoleState=await client.query('SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname=$1) AS exists',[appRole]);
+ if(appRoleState.rows[0]?.exists){
+  console.log('Authorizing dedicated application login to assume teensurance_runtime.');
+  await client.query('GRANT teensurance_runtime TO teensurance_app');
+ }else{
+  console.log('Dedicated application login teensurance_app is not present; runtime membership not changed.');
+ }
+
  console.log('Applying idempotent waitlist repair.');
  await client.query(readFileSync(new URL('../migrations/006_waitlist_hosted_repair.sql',import.meta.url),'utf8'));
 
