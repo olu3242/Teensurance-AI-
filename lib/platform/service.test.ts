@@ -21,6 +21,18 @@ async function setup(){
  return {parent,teen,stranger,householdId};
 }
 describe('local platform certification',()=>{
+ it('enforces persona CRED permissions for critical driver fields',async ()=>{
+  const {parent,teen,householdId}=await setup();
+  const original=(await all<Profile>('profile'))[0];
+  const teenChange:Command={action:'profile.save',householdId,teenId:teen.id,name:'Teen Updated',birthDate:original.birthDate,jurisdiction:'TX',stage:'licensed',goalMinutes:original.goalMinutes,permitDate:original.permitDate,suspensionDays:original.suspensionDays};
+  expect((await run(teen,teenChange)).status).toBe(403);
+  const teenNameOnly:Command={...teenChange,stage:original.stage,name:'Teen Updated'};
+  expect((await run(teen,teenNameOnly)).status).toBe(200);
+  const guardianChange:Command={...teenNameOnly,stage:'licensed',goalMinutes:2400};
+  expect((await run(parent,guardianChange)).status).toBe(200);
+  const saved=(await all<Profile>('profile'))[0];
+  expect(saved).toMatchObject({name:'Teen Updated',stage:'licensed',goalMinutes:2400});
+ });
  it('expires invitations, rejects overlapping time and preserves consent boundaries',async ()=>{
   const {parent,teen,stranger,householdId}=(await setup());
   const invite=(await run(parent,{action:'invite.create',householdId,role:'supervisor',teenId:teen.id})) as {result:{token:string}};

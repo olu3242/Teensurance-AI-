@@ -251,3 +251,17 @@ textarea { resize: vertical; min-height: 90px; }
 .waitlistPage .waitlistForm .landing-button{background:var(--lime);border-color:var(--lime);color:var(--ink);width:100%}
 .waitlistPage .waitlistForm .landing-button:hover:not(:disabled){background:var(--lime-hover)}
 .waitlistSuccess{border-left:5px solid var(--lime);background:var(--lime-soft);padding:28px;border-radius:var(--radius)}
+
+.brandMarkCanonical,[data-teensurance-brand-mark]{
+  display:block;
+  flex-shrink:0;
+  width:30px;
+  height:31px;
+  font-size:0;
+  background:var(--brand-lime)!important;
+  color:var(--brand-lime)!important;
+  fill:var(--brand-lime)!important;
+  clip-path:polygon(0 0,100% 0,100% 31%,69% 31%,69% 100%,32% 100%,32% 39%,0 39%);
+}
+.brandMarkLarge{width:48px;height:49px}
+.brandLogoMark,.brandLoaderMark,.brandMark,.driveMark,.landing-mark{background:var(--brand-lime)!important;color:var(--brand-lime)!important;fill:var(--brand-lime)!important}
