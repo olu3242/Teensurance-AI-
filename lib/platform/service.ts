@@ -6,6 +6,7 @@ import type {Command} from './commands';
 import type {Dashboard,Drive,Evidence,Household,Invite,Member,Profile,Relationship,Reminder,SafetyDecision,User} from './types';
 import {ageOn,journey} from './journey';
 import {jurisdictionRules,ruleForJurisdiction} from './jurisdictions';
+import {resolveStateExperience} from './state-experience';
 import {agentContracts} from './agents';
 
 const now=()=>new Date().toISOString();
@@ -116,6 +117,6 @@ export async function dashboard(user:User,requested?:string):Promise<Dashboard>{
  const evidence=member.role==='supervisor'?[]:(await all<Evidence>('evidence',household.id)).filter(e=>ids.has(e.teenId)&&(e.milestone!=='coverage'||member.role==='guardian'));
  const reminders=member.role==='supervisor'?[]:(await all<Reminder>('reminder',household.id)).filter(r=>ids.has(r.teenId)&&r.ownerId===user.id&&processingAllowed(profiles.find(p=>p.ownerId===r.teenId)!)&&!drives.some(d=>d.teenId===r.teenId&&d.status==='active'));
  const visibleMembers=(await all<Member>('member',household.id)).filter(m=>m.ownerId===user.id||ids.has(m.ownerId)||relationships.some(r=>r.adultId===m.ownerId)||member.role==='guardian'&&linked(m.ownerId));
- const result={...empty,household,membership:member,members:visibleMembers,profiles:member.role==='supervisor'?[]:profiles,relationships,drives,evidence,reminders,journeys:member.role==='supervisor'?[]:(await Promise.all(profiles.map(async p=>({teenId:p.ownerId,...journey(p,drives,evidence,jurisdictionRules,(await totals(household.id,p.ownerId,drives))),totals:(await totals(household.id,p.ownerId,drives))})))),audit:(await db().prepare('SELECT * FROM audit WHERE household_id=? AND actor_id=? ORDER BY at DESC LIMIT 30').all(household.id,user.id))};
+ const result={...empty,household,membership:member,members:visibleMembers,profiles:member.role==='supervisor'?[]:profiles,relationships,drives,evidence,reminders,journeys:member.role==='supervisor'?[]:(await Promise.all(profiles.map(async p=>{const t=await totals(household.id,p.ownerId,drives);const j=journey(p,drives,evidence,jurisdictionRules,t);return {teenId:p.ownerId,...j,stateExperience:resolveStateExperience(p,j.rule,j.practice),totals:t}}))),audit:(await db().prepare('SELECT * FROM audit WHERE household_id=? AND actor_id=? ORDER BY at DESC LIMIT 30').all(household.id,user.id))};
  (await audit(user.id,household.id,'dashboard.read','ALLOW','Only relationship-scoped resources returned.'));return result;
 }))}
