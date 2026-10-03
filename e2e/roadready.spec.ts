@@ -71,3 +71,23 @@ test('E2E-13 Pennsylvania verified practice appears in state Passport without Te
  await expect(page.getByRole('button',{name:'Start Permit Prep'})).toBeDisabled();
  await f.teen.close();await f.guardian.close();
 });
+
+
+test('E2E-14 selected state controls legal requirements and prevents cross-state leakage',async({browser})=>{
+ const tx=await setup(browser,'TX');const txPage=await tx.teen.newPage();await txPage.goto('/pilot?tab=profile');
+ await expect(txPage.getByLabel('State / licensing jurisdiction')).toHaveValue('TX');
+ await txPage.getByRole('button',{name:'My journey'}).click();
+ await expect(txPage.getByText('Texas requirements for this stage')).toBeVisible();
+ await expect(txPage.getByText(/Complete 30 hours of supervised practice/)).toBeVisible();
+ await expect(txPage.getByText(/65 hours of supervised skill building/)).toHaveCount(0);
+ await tx.teen.close();await tx.guardian.close();
+
+ const pa=await setup(browser,'PA');const paPage=await pa.teen.newPage();await paPage.goto('/pilot?tab=profile');
+ await expect(paPage.getByLabel('State / licensing jurisdiction')).toHaveValue('PA');
+ await paPage.getByRole('button',{name:'My journey'}).click();
+ await expect(paPage.getByText('Pennsylvania requirements for this stage')).toBeVisible();
+ await expect(paPage.getByText(/65 hours of supervised skill building/)).toBeVisible();
+ await expect(paPage.getByText(/Impact Texas Teen Drivers/)).toHaveCount(0);
+ await expect(paPage.getByRole('link',{name:/Review current PennDOT requirements/})).toHaveAttribute('href',/pa\.gov/);
+ await pa.teen.close();await pa.guardian.close();
+});
