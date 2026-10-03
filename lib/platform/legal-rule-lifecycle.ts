@@ -6,7 +6,6 @@ import {requireReviewer} from './admin';
 import {audit} from './service';
 import type {Rule,User} from './types';
 import {jurisdictionRules,normalizeJurisdiction} from './jurisdictions';
-import {stateRolloutManifest,stateRolloutSummary} from './state-rollout';
 
 export type LegalRuleReviewStatus='draft'|'review'|'approved'|'published'|'superseded'|'retired';
 export type LegalRuleReview={
@@ -46,7 +45,6 @@ export async function runtimeRuleResolution(value:string,now=new Date()){return 
 export async function runtimeRules(now=new Date()){const reviews=await all<LegalRuleReview>('legal_rule_review');return jurisdictionRules.filter(r=>resolveRuleLifecycle(r.jurisdiction,reviews,now).rule?.id===r.id)}
 
 export async function inspectLegalRules(user:User){requireReviewer(user);const reviews=await all<LegalRuleReview>('legal_rule_review');return legalRuleCatalog().map(({rule,digest})=>({rule,digest,review:reviewFor(rule,reviews)||null,resolution:resolveRuleLifecycle(rule.jurisdiction,reviews)}))}
-export async function inspectStateRollout(user:User){requireReviewer(user);const reviews=await all<LegalRuleReview>('legal_rule_review');const states=stateRolloutManifest(reviews);return {summary:stateRolloutSummary(states),states}}
 
 const input=z.object({ruleId:z.string().min(1),digest:z.string().length(64),to:z.enum(['review','approved','published','superseded','retired']),note:z.string().trim().min(10).max(1000),humanAttestation:z.boolean()}).strict();
 export async function changeLegalRuleReview(user:User,raw:unknown){requireReviewer(user);const parsed=input.safeParse(raw);if(!parsed.success)throw new AppError('Invalid legal-rule review request.',400);const c=parsed.data;
