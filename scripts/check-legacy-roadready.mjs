@@ -57,6 +57,8 @@ const allowedExact=new Set([
   'package.json',
   'playwright.config.ts',
   'scripts/check-legacy-roadready.mjs',
+  '.github/workflows/jurisdiction-certify.yml',
+  'scripts/jurisdiction-certify.mjs',
   'tsconfig.json',
 ]);
 

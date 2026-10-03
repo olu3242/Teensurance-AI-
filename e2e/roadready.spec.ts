@@ -9,14 +9,14 @@ const request=(context:BrowserContext,url:string,data:unknown)=>{
  const answerId=input.answerId==='meaning'?q?.answerId:input.answerId==='misconception'?q?.options.find(o=>o.id!==q.answerId)?.id:undefined;
  return context.request.post(url,{headers:{origin,'idempotency-key':randomUUID()},data:answerId?{...input,answerId}:data});
 };
-async function setup(browser:Browser){
+async function setup(browser:Browser,jurisdiction:'TX'|'PA'='TX'){
  const guardian=await browser.newContext({baseURL:origin});const teen=await browser.newContext({baseURL:origin});const stamp=randomUUID();
  const p=await (await request(guardian,'/api/auth',{action:'register',name:'Guardian',email:`p-${stamp}@example.test`,password:'Roadready-password-123'})).json();
  const t=await (await request(teen,'/api/auth',{action:'register',name:'Learner',email:`t-${stamp}@example.test`,password:'Roadready-password-123'})).json();
  const h=await (await request(guardian,'/api/workspace',{action:'household.create',name:'Learning family',adultAttestation:true})).json();const householdId=h.result.id;const teenId=t.user.id;
  const invite=await (await request(guardian,'/api/workspace',{action:'invite.create',householdId,role:'teen'})).json();
  expect((await request(teen,'/api/workspace',{action:'invite.accept',token:invite.result.token})).ok()).toBe(true);
- expect((await request(teen,'/api/workspace',{action:'profile.save',householdId,teenId,name:'Learner',birthDate:'2010-01-01',jurisdiction:'TX',stage:'permit',goalMinutes:1800,permitDate:'2025-01-01',suspensionDays:0})).ok()).toBe(true);
+ expect((await request(teen,'/api/workspace',{action:'profile.save',householdId,teenId,name:'Learner',birthDate:'2010-01-01',jurisdiction,stage:'permit',goalMinutes:jurisdiction==='PA'?3900:1800,permitDate:'2025-01-01',suspensionDays:0})).ok()).toBe(true);
  expect((await request(guardian,'/api/workspace',{action:'consent.set',householdId,teenId,granted:true})).ok()).toBe(true);
  return {guardian,teen,householdId,teenId,parentId:p.user.id,email:`t-${stamp}@example.test`};
 }
@@ -55,3 +55,19 @@ test('E2E-09 two misses produce stable Scout review and completion',async({brows
 test('E2E-10 Permit Prep review, persistence and Passport separation',async({browser})=>{const f=await setup(browser);const page=await f.teen.newPage();await open(page);await page.getByRole('button',{name:'Start Permit Prep'}).click();for(let i=0;i<5;i++){await intelligenceQuestion(page,i!==0);await page.getByRole('region',{name:'Intelligence activity'}).getByRole('button',{name:i===4?'Return to activities':'Continue activity'}).click()}await page.reload();await expect(page.getByText(/1 practice sessions completed/)).toBeVisible();const d=await (await f.teen.request.get(`/api/roadready?householdId=${f.householdId}&teenId=${f.teenId}`)).json();expect(d.data.evidence).toEqual([]);await expect(page.getByText('Practice progress is separate from Passport evidence. No passing prediction is provided.')).toBeVisible();await f.teen.close();await f.guardian.close()});
 test('E2E-11 Guardian Coach records separate reinforcement and rejects teen forgery',async({browser})=>{const f=await setup(browser);seedLaterEvidence(f.householdId,f.teenId);const page=await f.guardian.newPage();await open(page);await page.getByRole('button',{name:'Start recommended family activity'}).click();await page.getByRole('button',{name:'Confirm family reinforcement'}).click();await expect(page.locator('#road-knowledge')).toContainText('STOP: reinforced');expect((await request(f.teen,'/api/roadready/intelligence',{householdId:f.householdId,teenId:f.teenId,context:'AT_HOME',action:'coach_start',conceptId:'US-TX:stop'})).status()).toBe(403);await f.teen.close();await f.guardian.close()});
 test('E2E-12 non-Texas content fallback excludes Texas permit questions',async({browser})=>{const f=await setup(browser);expect((await request(f.teen,'/api/workspace',{action:'profile.save',householdId:f.householdId,teenId:f.teenId,name:'Learner',birthDate:'2010-01-01',jurisdiction:'OTHER',stage:'permit',goalMinutes:1800,permitDate:'2025-01-01',suspensionDays:0})).ok()).toBe(true);const page=await f.teen.newPage();await page.goto('/teen/roadready');await expect(page.getByText('Jurisdiction-specific content is not yet available. Core hazard awareness remains available.')).toBeVisible();await expect(page.getByRole('button',{name:'Start Permit Prep'})).toBeDisabled();await expect(page.getByRole('heading',{name:'Spot What Matters'})).toBeVisible();expect((await request(f.teen,'/api/roadready/intelligence',{householdId:f.householdId,teenId:f.teenId,context:'AT_HOME',action:'start',kind:'review',itemId:'US-TX:stop'})).status()).toBe(409);await f.teen.close();await f.guardian.close()});
+
+
+test('E2E-13 Pennsylvania verified practice appears in state Passport without Texas permit leakage',async({browser})=>{
+ const f=await setup(browser,'PA');
+ const drive=await (await request(f.teen,'/api/workspace',{action:'drive.manual',householdId:f.householdId,teenId:f.teenId,supervisorId:f.parentId,skill:'Reduced visibility',startedAt:'2026-09-20T12:00:00.000Z',minutes:60,nightMinutes:0,weatherMinutes:60,note:'Supervised rain practice',supervisorEligible:true})).json();
+ expect((await request(f.guardian,'/api/workspace',{action:'drive.review',householdId:f.householdId,id:drive.result.id,decision:'confirm',reason:'Observed full session'})).ok()).toBe(true);
+ const page=await f.teen.newPage();await page.goto('/teen/roadready');
+ await expect(page.getByRole('heading',{name:'PA verified practice'})).toBeVisible();
+ const passport=page.getByRole('heading',{name:'PA verified practice'}).locator('..');
+ await expect(passport).toContainText('1h 0m verified of 65h');
+ await expect(passport).toContainText('Night: 0/600 min');
+ await expect(passport).toContainText('Poor weather: 60/300 min');
+ await expect(passport).toContainText('does not establish legal eligibility');
+ await expect(page.getByRole('button',{name:'Start Permit Prep'})).toBeDisabled();
+ await f.teen.close();await f.guardian.close();
+});

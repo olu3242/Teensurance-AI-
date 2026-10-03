@@ -1,6 +1,6 @@
 import type {Rule} from './types';
 // Source-reviewed snapshot, not a determination of legal eligibility.
-export const texasRule:Rule={id:'tx-provisional-2026-09-27',householdId:'public',ownerId:'content',jurisdiction:'TX',version:'2026-09-27.1',sourceUrl:'https://www.dps.texas.gov/section/driver-license/texas-provisional-license-teen',sourceTitle:'Texas DPS — Provisional License as a Teen',reviewedAt:'2026-09-27T00:00:00Z',validUntil:'2026-12-26T00:00:00Z',effectiveFrom:'2026-09-27',minimumAge:16,totalMinutes:1800,nightMinutes:600,status:'verified',reviewedBy:'Repository source review, 2026-09-27'};
+export const texasRule:Rule={id:'tx-provisional-2026-09-27',householdId:'public',ownerId:'content',jurisdiction:'TX',aliases:['US-TX'],version:'2026-09-27.1',sourceUrl:'https://www.dps.texas.gov/section/driver-license/texas-provisional-license-teen',sourceTitle:'Texas DPS — Provisional License as a Teen',reviewedAt:'2026-09-27T00:00:00Z',validUntil:'2026-12-26T00:00:00Z',effectiveFrom:'2026-09-27',learnerMinimumAge:15,minimumAge:16,holdingMonths:6,totalMinutes:1800,nightMinutes:600,requiredEvidence:['education','impact','test','documents'],authorityLabel:'Texas DPS',status:'verified',reviewedBy:'Repository source review, 2026-09-27'};
 export const texasChecklist=[
  'This provisional pathway applies to ages 16–17.',
  'Hold the learner license for six months; suspension days extend the period.',

@@ -8,6 +8,9 @@ import {AppError,hash} from '../platform/auth';
 import {all,db,get,owned,put,transaction as domainTransaction} from '../platform/db';
 import {audit} from '../platform/service';
 import {ageOn} from '../platform/journey';
+import {normalizeJurisdiction,ruleForJurisdiction} from '../platform/jurisdictions';
+import {projectPractice} from '../platform/practice';
+import type {Drive} from '../platform/types';
 import type {User} from '../platform/types';
 import {migrateRoadReady} from '../platform/migrations/002-roadready';
 import {migrateIntelligence} from '../platform/migrations/003-intelligence';
@@ -36,7 +39,7 @@ async function context(user:User,householdId:string,teenId:string){
  if(ageOn(ctx.profile.birthDate)<18&&!ctx.profile.consent)deny('Guardian consent is required.');
  if((await db().prepare("SELECT 1 FROM records WHERE kind='drive' AND json_extract(payload,'$.status')='active' AND (json_extract(payload,'$.teenId') IN (?,?) OR json_extract(payload,'$.supervisorId')=?) LIMIT 1").get(teenId,user.id,user.id)))deny('Resume learning after parking.');
  (await migrateRoadReady(db()));(await migrateIntelligence(db()));
- return {...ctx,jurisdiction:ctx.profile.jurisdiction==='TX'?'US-TX':ctx.profile.jurisdiction};
+ const code=normalizeJurisdiction(ctx.profile.jurisdiction);return {...ctx,jurisdiction:code==='OTHER'?'OTHER':`US-${code}`,jurisdictionCode:code};
 }
 async function event(householdId:string,teenId:string,name:string){(await put('roadready_event',{...base(householdId,teenId),name,at:now()}))}
 function catalog(ctx:Awaited<ReturnType<typeof context>>){return {...jurisdictionPack(ctx.jurisdiction),hazards:resolveHazards(ctx.jurisdiction)}}
@@ -65,11 +68,15 @@ async function recommendation(ctx:Awaited<ReturnType<typeof context>>){
 async function scoped<T extends {householdId:string;teenId:string}>(kind:string,id:string,ctx:Awaited<ReturnType<typeof context>>){const r=(await get<T>(kind,id));if(!r||r.householdId!==ctx.householdId||r.teenId!==ctx.teenId)deny('Activity unavailable.',404);return r}
 export async function readIntelligence(user:User,householdId:string,teenId:string){return (await transaction(async ()=>{try{
  const ctx=(await context(user,householdId,teenId));const content=catalog(ctx);const e=(await learnerEvidence(householdId,teenId));
+ const drives=(await all<Drive>('drive',householdId)).filter(d=>d.teenId===teenId&&d.status==='verified');
+ const practiceTotals={verifiedMinutes:drives.reduce((n,d)=>n+d.minutes,0),nightMinutes:drives.reduce((n,d)=>n+d.nightMinutes,0),weatherMinutes:drives.reduce((n,d)=>n+(d.weatherMinutes||0),0)};
+ const rule=ruleForJurisdiction(ctx.jurisdictionCode);const jurisdictionPassport=projectPractice(rule,practiceTotals);
+ const stateRecommendation=jurisdictionPassport?.nextAction?{agent:'SCOUT' as const,type:'jurisdiction_practice' as const,category:jurisdictionPassport.nextAction.category,title:'Build verified state practice',reason:jurisdictionPassport.nextAction.message,sourceUrl:jurisdictionPassport.sourceUrl,claim:jurisdictionPassport.claim}:undefined;
  const sessions=(await owned<PracticeSession>('intelligence_session',householdId,teenId));
  const attempts=(await owned<PracticeAttempt>('permit_attempt',householdId,teenId));
  const coach=(await all<CoachActivity>('coach_activity',householdId)).filter(a=>a.teenId===teenId&&a.guardianId===user.id);
  (await audit(user.id,householdId,'intelligence.read','ALLOW','Relationship and safety checks passed.'));
- return {status:200,data:{role:ctx.member.role,jurisdiction:ctx.jurisdiction,fallback:content.concepts.length?'':'Jurisdiction-specific content is not yet available. Core hazard awareness remains available.',hazards:content.hazards.map(publicHazard),recommendation:(await recommendation(ctx)),sessions:sessions.filter(s=>!s.completedAt).map(s=>sessionView(s,ctx)),permit:{completed:sessions.filter(s=>s.kind==='permit'&&s.completedAt).length,coverage:new Set(attempts.map(a=>a.conceptId)).size,missed:Array.from(new Set(attempts.filter(a=>!a.correct).map(a=>a.conceptId))),attempts},coach,coachConcepts:[...content.concepts.map(c=>({id:c.id,name:c.name})),...Array.from(new Set(content.hazards.map(h=>h.conceptId))).map(id=>({id,name:'Hazard awareness across road scenes'}))],hazardPassport:Array.from(new Set(content.hazards.map(h=>h.conceptId))).map(id=>({...mastery(id,e.learning,e.guardian),name:'Hazard awareness across road scenes'})),recentEvidence:e.learning.filter(e=>e.conceptId.startsWith('CORE:hazard-')).slice(-5)}};
+ return {status:200,data:{role:ctx.member.role,jurisdiction:ctx.jurisdiction,jurisdictionPassport,stateRecommendation,fallback:content.concepts.length?'':'Jurisdiction-specific content is not yet available. Core hazard awareness remains available.',hazards:content.hazards.map(publicHazard),recommendation:(await recommendation(ctx)),sessions:sessions.filter(s=>!s.completedAt).map(s=>sessionView(s,ctx)),permit:{completed:sessions.filter(s=>s.kind==='permit'&&s.completedAt).length,coverage:new Set(attempts.map(a=>a.conceptId)).size,missed:Array.from(new Set(attempts.filter(a=>!a.correct).map(a=>a.conceptId))),attempts},coach,coachConcepts:[...content.concepts.map(c=>({id:c.id,name:c.name})),...Array.from(new Set(content.hazards.map(h=>h.conceptId))).map(id=>({id,name:'Hazard awareness across road scenes'}))],hazardPassport:Array.from(new Set(content.hazards.map(h=>h.conceptId))).map(id=>({...mastery(id,e.learning,e.guardian),name:'Hazard awareness across road scenes'})),recentEvidence:e.learning.filter(e=>e.conceptId.startsWith('CORE:hazard-')).slice(-5)}};
  }catch(error){if(!(error instanceof AppError))throw error;(await audit(user.id,householdId,'intelligence.read','DENY','Learning authorization rejected.'));return {status:error.status,error:error.message}}}))}
 export async function executeIntelligence(user:User,raw:unknown,key:string){return (await transaction(async ()=>{
  const parsed=command.safeParse(raw);if(!parsed.success){(await audit(user.id,'','intelligence.invalid','DENY','Strict command validation rejected.'));return {status:400,error:'Invalid learning action.'}}
