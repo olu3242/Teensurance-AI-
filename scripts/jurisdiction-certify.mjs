@@ -4,7 +4,7 @@ const cli=process.env.npm_execpath;if(!cli)throw new Error('Run with npm run jur
 const gates=[
  ['typecheck'],
  ['lint'],
- ['test','--','lib/platform/jurisdictions.test.ts','lib/platform/legal-rule-lifecycle.test.ts','lib/platform/state-experience.test.ts','lib/platform/state-package-factory.test.ts','lib/platform/state-rollout.test.ts','lib/platform/legal-source-queue.test.ts','lib/platform/practice.test.ts','lib/platform/practice-e2e.test.ts','lib/platform/journey.test.ts','lib/platform/service.test.ts','lib/roadready/intelligence.test.ts','app/api/scout/intelligence/route.test.ts'],
+ ['test','--','lib/platform/jurisdictions.test.ts','lib/platform/legal-rule-lifecycle.test.ts','lib/platform/state-experience.test.ts','lib/platform/state-package-factory.test.ts','lib/platform/state-rollout.test.ts','lib/platform/legal-source-queue.test.ts','lib/platform/legal-rule-drafting.test.ts','lib/platform/practice.test.ts','lib/platform/practice-e2e.test.ts','lib/platform/journey.test.ts','lib/platform/service.test.ts','lib/roadready/intelligence.test.ts','app/api/scout/intelligence/route.test.ts'],
  ['build'],
  ['test:roadready:e2e'],
 ];
