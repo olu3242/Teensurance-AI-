@@ -37,7 +37,34 @@ export function resolveStateExperience(profile:Profile,rule:Rule|undefined,pract
  };
 }
 
-export const supportedJurisdictions=[
- {code:'TX',name:'Texas'},
- {code:'PA',name:'Pennsylvania'},
-] as const;
+export type SupportedJurisdiction={
+ code:string;
+ name:string;
+ rulePackage:'reviewed'|'pending';
+};
+
+const stateCatalog:[string,string][]=[
+ ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
+ ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
+ ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
+ ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
+ ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
+ ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
+ ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
+ ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
+ ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
+ ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
+];
+
+const reviewedRulePackages=new Set(['TX','PA']);
+
+export const supportedJurisdictions:SupportedJurisdiction[]=stateCatalog.map(([code,name])=>({
+ code,
+ name,
+ rulePackage:reviewedRulePackages.has(code)?'reviewed':'pending'
+}));
+
+export function supportedJurisdiction(value:string){
+ const code=value.trim().toUpperCase().replace(/^US-/,'');
+ return supportedJurisdictions.find(item=>item.code===code);
+}
