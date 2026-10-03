@@ -2,6 +2,7 @@
 import {useCallback,useEffect,useMemo,useState} from 'react';
 import Link from 'next/link';
 import {ScoutLearningCard} from '@/components/ScoutLearningCard';
+import {StateLegalContextCard} from '@/components/StateLegalContextCard';
 import {BrandLoader} from '@/components/BrandLoader';
 import {BrandLogo} from '@/components/BrandLogo';
 import {DashboardCustomizer} from '@/components/DashboardCustomizer';
@@ -21,7 +22,7 @@ export default function TeenDashboard(){
  if(loadError)return <main className="dashboardPage"><h1>Your learning workspace</h1><p role="alert">{loadError}</p><Link href="/pilot">Sign in or complete family setup</Link></main>;
  if(loading)return <BrandLoader label="Loading teen dashboard"/>;
  return <main className="dashboardPage"><header className="dashboardHeader"><BrandLogo/><nav><Link href="/pilot">Journey</Link><Link href="/dashboard/parent">Parent dashboard</Link></nav></header><section className="dashboardHero"><div><span>TEEN DASHBOARD / VIBE</span><h1>Your road.<br/>Your next safe step.</h1><p>Build readiness with lessons, supervised practice and reflection. No driving streaks. No speed scores.</p></div><DashboardCustomizer storageKey="teensurance.teen.widgets" options={options} onChange={update}/></section>
- <div className="dashboardGrid"><ScoutLearningCard/>
+ <div className="dashboardGrid"><StateLegalContextCard/><ScoutLearningCard/>
  {widgets.includes('next_step')&&<section className="dashCard accentCard"><span>VIBE / NEXT</span><h2>{p.pending?'Ask your parent to review your pending drive':'Prepare your next practice intentionally'}</h2><p>{p.pending?'Pending practice does not count until family review.':'Choose one lesson or one driving skill, prepare while parked, then put the phone away.'}</p><Link href="/pilot">Open journey →</Link></section>}
  {widgets.includes('time')&&<TimeCalculator verifiedMinutes={p.verifiedMinutes} nightMinutes={p.nightMinutes} goalHours={state.goalHours}/>}
  {widgets.includes('passport')&&<section className="dashCard"><span>PASSPORT</span><h2>{passport.evidencePresent} / {passport.evidenceTotal} evidence areas</h2><p>{passport.nextSafeStep}</p><Link href="/pilot?tab=passport">View evidence →</Link></section>}
