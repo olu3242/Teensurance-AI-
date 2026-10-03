@@ -12,6 +12,10 @@ on:
       - 'scripts/jurisdiction-certify.mjs'
       - 'lib/platform/state-package-factory.ts'
       - 'lib/platform/state-package-factory.test.ts'
+      - 'lib/platform/legal-source-queue.ts'
+      - 'lib/platform/legal-source-queue.test.ts'
+      - 'app/api/admin/legal-sources/route.ts'
+      - 'app/admin/legal-sources/page.tsx'
       - 'package.json'
       - '.github/workflows/jurisdiction-certify.yml'
 
