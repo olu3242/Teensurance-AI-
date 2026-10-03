@@ -11,7 +11,8 @@ const gates=[
 const results=[];
 for(const [name,...args] of gates){
  const start=Date.now();const env=name==='build'?{...process.env,NEXT_DIST_DIR:'.next-jurisdiction-cert'}:process.env;
- const r=spawnSync(process.execPath,[cli,'run',name,...args],{stdio:'inherit',env});
+ const runEnv=name==='test:roadready:e2e'?{...env,ROADREADY_E2E_DB_PATH:`${process.cwd()}/test-results/jurisdiction-browser-${Date.now()}.sqlite`}:env;
+ const r=spawnSync(process.execPath,[cli,'run',name,...args],{stdio:'inherit',env:runEnv});
  results.push({name,exitCode:r.status,error:r.error?.message,durationMs:Date.now()-start});
  if(r.status!==0)break;
 }
