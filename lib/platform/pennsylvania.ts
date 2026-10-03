@@ -5,7 +5,7 @@ export const pennsylvaniaRule:Rule={
  id:'pa-junior-2026-10-03',
  householdId:'public',
  ownerId:'content',
- jurisdiction:'PA',
+ jurisdiction:'PA',stateName:'Pennsylvania',legalRequirements:[{id:'pa-hold',kind:'holding_period',label:'For drivers under 18, hold the learner permit for at least 6 months before the road test.',stages:['permit']},{id:'pa-practice',kind:'practice',label:'Complete 65 hours of supervised skill building, including 10 hours at night and 5 hours in poor weather.',stages:['permit']},{id:'pa-certification',kind:'documents',label:'A parent or guardian certifies the supervised skill-building requirement using the applicable PennDOT process.',stages:['permit']},{id:'pa-junior-night',kind:'restriction',label:'Junior-license nighttime restrictions apply; confirm current exceptions and hours with PennDOT.',stages:['licensed']},{id:'pa-junior-passenger',kind:'restriction',label:'Junior-license passenger restrictions apply; confirm current limits and exceptions with PennDOT.',stages:['licensed']}],
  aliases:['US-PA'],
  version:'2026-10-03.1',
  sourceUrl:'https://www.pa.gov/agencies/penndot/traveling-in-pa/safety/traffic-safety-driver-topics/young-driver',
