@@ -68,3 +68,35 @@ Teen logs drive → submit for verification → supervisor receives request
 ## Technical stack (default, adapt to existing repo)
 
 Next.js, TypeScript, PostgreSQL/Supabase, server-side authorization, schema validation (e.g., Zod), a componentized design system, and a modern testing stack (unit + integration + E2E). If a repository already exists, its conventions take precedence — see `.claude/CLAUDE.md`.
+
+## RoadReady local integration
+
+`lib/roadready` adds jurisdiction content, a deterministic evidence projection,
+Scout's machine-readable contract and an authenticated service. `/api/roadready`
+reuses `lib/platform` authentication, transactions, records, idempotency and audit.
+It creates no second datastore. `roadready_attempt` and `roadready_guardian` records
+are append-only through SQLite triggers. Session and mastery projections are mutable;
+Passport linkage retains immutable evidence IDs. Every request rechecks household,
+guardian relation, consent, adult sharing and active drives before replay or execution.
+
+The local records database has no RLS facility. Authorization is enforced in the
+service; SQL tests verify immutable evidence. This is not a hosted PostgreSQL/RLS
+certification. The initial pack is US-TX only; unsupported jurisdictions fail closed.
+The current demo pilot and staged authenticated platform remain separate baseline
+paths; RoadReady explicitly uses authenticated local accounts.
+
+
+## W62 legacy learning authorization
+
+Legacy dashboards and lessons now use the existing platform session rather than
+shared `data/pilot.json`. `authorizeLearner` is shared by RoadReady and legacy
+learning: authenticated user -> persisted active membership -> own learner or
+active guardian relationship -> scoped profile/progress. Private lesson progress
+uses `records(kind=lesson_progress)` with household and owner SQL predicates.
+Public definitions are available separately at `/api/lessons/catalog`.
+
+`/api/pilot` is an authenticated read projection; its mutations remain retired.
+`/api/os/status` and the global admin projection are retired until explicit admin
+authorization exists. No legacy JSON history is silently assigned to an account.
+`security:certify` runs negative service/API authorization tests and is a mandatory
+step of `roadready:certify`. Hosted RLS and persistence require separate W63 checks.

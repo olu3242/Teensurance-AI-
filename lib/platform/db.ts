@@ -1,0 +1,18 @@
+import {AsyncLocalStorage} from 'node:async_hooks';
+import {resolve} from 'node:path';
+import {sqlite} from './persistence/sqlite';
+import {postgres} from './persistence/postgres';
+import type {Database} from './persistence/types';
+export type {Database} from './persistence/types';
+const active=new AsyncLocalStorage<Database>();
+const adapters=new Map<string,{database:Database;acquire?:ReturnType<typeof postgres>['acquire'];queue:Promise<unknown>}>();
+export function persistenceKind(){const kind=process.env.TEENSURANCE_PERSISTENCE||'sqlite';if(!['sqlite','postgres'].includes(kind))throw new Error('Invalid persistence configuration');if((process.env.VERCEL||process.env.TEENSURANCE_ENV==='production')&&kind!=='postgres')throw new Error('Hosted persistence requires PostgreSQL');return kind}
+function adapter(){const kind=persistenceKind();const key=kind==='postgres'?process.env.DATABASE_URL:resolve(process.env.TEENSURANCE_DB_PATH||'data/teensurance.sqlite');if(!key)throw new Error('PostgreSQL connection is not configured');let value=adapters.get(key);if(!value){value={...(kind==='postgres'?postgres(key):{database:sqlite(key)}),queue:Promise.resolve()};adapters.set(key,value)}return value}
+export function db():Database{const current=active.getStore();if(current)return current;const raw=adapter().database;return {dialect:raw.dialect,close:()=>raw.close(),exec:sql=>transaction(()=>db().exec(sql)),prepare(sql){return {run:(...args)=>transaction(()=>db().prepare(sql).run(...args)),get:(...args)=>transaction(()=>db().prepare(sql).get(...args)),all:(...args)=>transaction(()=>db().prepare(sql).all(...args))}}}}
+export async function transaction<T>(fn:()=>T|Promise<T>):Promise<T>{if(active.getStore())return fn();const a=adapter();const run=async()=>{const acquired=a.acquire?await a.acquire():undefined;const database=acquired?.database||a.database;try{await database.exec(database.dialect==='sqlite'?'BEGIN IMMEDIATE':'BEGIN');if(database.dialect==='postgres')await database.exec('SELECT pg_advisory_xact_lock(72697669)');return await active.run(database,async()=>{try{const result=await fn();await database.exec('COMMIT');return result}catch(error){await database.exec('ROLLBACK');throw error}})}finally{acquired?.release()}};if(a.acquire)return run();const work=a.queue.then(run,run);a.queue=work.catch(()=>{});return work}
+export type RecordBase={id:string;householdId:string;ownerId:string};
+export async function put<T extends RecordBase>(kind:string,value:T){await db().prepare('INSERT INTO records(id,kind,household_id,owner_id,payload) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload').run(value.id,kind,value.householdId,value.ownerId,JSON.stringify(value));return value}
+export async function get<T>(kind:string,id:string):Promise<T|undefined>{const row=await db().prepare('SELECT payload FROM records WHERE kind=? AND id=?').get(kind,id);return row?JSON.parse(String(row.payload)) as T:undefined}
+export async function all<T>(kind:string,householdId?:string):Promise<T[]>{const rows=householdId===undefined?await db().prepare('SELECT payload FROM records WHERE kind=? ORDER BY rowid').all(kind):await db().prepare('SELECT payload FROM records WHERE kind=? AND household_id=? ORDER BY rowid').all(kind,householdId);return rows.map(row=>JSON.parse(String(row.payload)) as T)}
+export async function owned<T>(kind:string,householdId:string,ownerId:string):Promise<T[]>{return (await db().prepare('SELECT payload FROM records WHERE kind=? AND household_id=? AND owner_id=? ORDER BY rowid').all(kind,householdId,ownerId)).map(row=>JSON.parse(String(row.payload)) as T)}
+export async function closeDatabases(){for(const a of adapters.values()){await a.queue;await a.database.close()}adapters.clear()}

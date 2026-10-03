@@ -1,0 +1,3 @@
+import {z} from 'zod';import {execute} from '@/lib/platform/service';import {body,errorResponse,json,requestUser,sameOrigin} from '@/lib/platform/http';
+const input=z.object({householdId:z.string().uuid(),role:z.enum(['teen','guardian','supervisor']),teenId:z.string().uuid().optional()}).strict();
+export async function POST(r:Request){try{sameOrigin(r);const u=await requestUser(r);const c=input.safeParse(await body(r));if(!c.success)return json({error:'Invalid invitation request.'},400);const key=r.headers.get('idempotency-key');if(!key||!/^[a-zA-Z0-9_-]{16,100}$/.test(key))return json({error:'Request key required.'},400);const result=await execute(u,{action:'invite.create',...c.data},key);return json(result,result.status)}catch(e){return errorResponse(e)}}

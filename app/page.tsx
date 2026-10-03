@@ -4,6 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import './landing.css';
+import {SiteHeader} from '@/components/SiteHeader';
+import {SiteFooter} from '@/components/SiteFooter';
+import {HelpChat} from '@/components/HelpChat';
 
 function Arrow() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -17,21 +20,12 @@ const milestones = ['Permit', 'Learn', 'Practice', 'License', 'Covered', 'Go fur
 
 export default function LandingPage() {
   const [slide, setSlide] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const waitlistMode=process.env.NEXT_PUBLIC_WAITLIST_MODE!=='false';
+
   return (
     <div className="landing">
       <a className="landing-skip" href="#main">Skip to content</a>
-      <header className="landing-header">
-        <Link href="/" className="landing-brand" aria-label="Teensurance home"><span className="landing-mark" aria-hidden="true" /><span>TEENSURANCE</span></Link>
-        <button className="landing-menu" aria-expanded={menuOpen} aria-controls="landing-nav" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'Close' : 'Menu'} <span aria-hidden="true">{menuOpen ? '−' : '+'}</span></button>
-        <nav id="landing-nav" className={menuOpen ? 'landing-nav is-open' : 'landing-nav'} aria-label="Main navigation">
-          <Link href="/pilot" onClick={() => setMenuOpen(false)}>For Teens</Link>
-          <Link href="/pilot?role=parent&tab=family" onClick={() => setMenuOpen(false)}>For Parents</Link>
-          <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How It Works</a>
-          <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
-        </nav>
-        <div className="landing-account"><Link href="/pilot" className="landing-login">Log In</Link><Link href="/pilot" className="landing-button landing-button-small">Get started <Arrow /></Link></div>
-      </header>
+      <SiteHeader />
       <main id="main">
         <section className="landing-hero" aria-labelledby="hero-heading">
           <div className="landing-intro">
@@ -39,7 +33,7 @@ export default function LandingPage() {
             <h1 id="hero-heading">YOUR ROAD<br /><span>STARTS HERE<span className="landing-period">.</span></span></h1>
             <p className="landing-tagline">Know what’s next. Track your progress. Get there safely.</p>
             <p className="landing-description">From first permit to confident driving, Teensurance helps<br className="landing-desktop-break" /> young drivers and their families navigate every step ahead.</p>
-            <div className="landing-actions"><Link href="/pilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/pilot?role=parent&tab=family" className="landing-parent">I’m a parent</Link></div>
+            <div className="landing-actions">{waitlistMode?<><Link href="/waitlist" className="landing-button">Join the waitlist <Arrow /></Link><span className="landing-parent" style={{borderBottom:0,color:'var(--muted)'}}>Pilot access is currently closed</span></>:<><Link href="/auth/login?next=%2Fpilot" className="landing-button">Start my journey <Arrow /></Link><Link href="/join" className="landing-parent">I have an invite</Link></>}</div>
           </div>
           <div className="landing-stories" role="region" aria-roledescription="carousel" aria-label="Your road ahead">
             <div className="landing-story-grid" aria-live="polite">
@@ -68,7 +62,20 @@ export default function LandingPage() {
           </div>
           <p className="landing-example-note">Illustrative practice progress. Your family’s goal and local licensing requirements may differ.</p>
         </section>
+                <section className="landing-faq" id="faq" aria-labelledby="faq-heading">
+          <div className="landing-faq-intro"><p className="landing-eyebrow">FAQ / THE BASICS</p><h2 id="faq-heading">Questions before<br/><span>you hit the road.</span></h2><p>Clear answers for teens and families. For local licensing requirements, always confirm with the official authority for your jurisdiction.</p></div>
+          <div className="landing-faq-list">
+            <details><summary>What does Teensurance actually do?<span>+</span></summary><p>It organizes the journey from learner to independent driver: preparation, supervised practice, family review, readiness evidence and insurance preparation.</p></details>
+            <details><summary>Does Teensurance decide when I am legally ready for a license?<span>+</span></summary><p>No. The Readiness Passport organizes evidence; it is not an official licensing decision. Jurisdiction requirements must come from reviewed official sources.</p></details>
+            <details><summary>Can I use the app while I am driving?<span>+</span></summary><p>No. GUARD is designed around phone-down driving. Prepare before moving, drive without app engagement, then log and reflect after you are safely parked.</p></details>
+            <details><summary>How do family invitations work?<span>+</span></summary><p>A guardian creates an invitation for the household. The invited person signs in and redeems that invitation before receiving household access.</p></details>
+            <details><summary>What is a referral code?<span>+</span></summary><p>A referral code records attribution only. It never grants household access, changes a user role, or affects licensing or insurance status.</p></details>
+            <details><summary>Does Teensurance sell or recommend insurance?<span>+</span></summary><p>Not in this MVP. COVER helps families prepare for insurance conversations, but Teensurance does not quote, bind, underwrite, rank carriers or determine eligibility.</p></details>
+          </div>
+        </section>
       </main>
+      <SiteFooter />
+      <HelpChat context="landing" />
     </div>
   );
 }

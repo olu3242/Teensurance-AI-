@@ -1,0 +1,63 @@
+name: MVP Certification
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [w30-w40-safety-readiness, w40-w50-mvp, w51-w60-workflow-os, w61-w70-mvp-ops, mvp-integration-w100]
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: teensurance
+          POSTGRES_PASSWORD: local-contract-only
+          POSTGRES_DB: teensurance_contract
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U teensurance"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      PERSISTENCE_TEST_URL: postgresql://teensurance:local-contract-only@127.0.0.1:5432/teensurance_contract
+      DATABASE_MIGRATION_URL: postgresql://teensurance:local-contract-only@127.0.0.1:5432/teensurance_contract
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build and generate route types
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Local PostgreSQL migrations and parity
+        run: |
+          node scripts/postgres-migrate.mjs
+          npm run persistence:certify
+      - name: Browser dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Content and pilot certification
+        run: |
+          npm run roadready:content:certify
+          npm run pilot:certify
+      - name: RoadReady regression certification
+        run: npm run roadready:certify

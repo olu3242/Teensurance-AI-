@@ -1,0 +1,42 @@
+{
+  "at": "2026-09-29T05:12:32.657Z",
+  "scope": "Automated checks only; separate security review and hosted release gates are required",
+  "status": "AUTOMATED_GATES_PASSED",
+  "gates": [
+    {
+      "script": "security:certify",
+      "exitCode": 0,
+      "durationMs": 16207
+    },
+    {
+      "script": "typecheck",
+      "exitCode": 0,
+      "durationMs": 4105
+    },
+    {
+      "script": "lint",
+      "exitCode": 0,
+      "durationMs": 8483
+    },
+    {
+      "script": "test",
+      "exitCode": 0,
+      "durationMs": 21412
+    },
+    {
+      "script": "build",
+      "exitCode": 0,
+      "durationMs": 36271
+    },
+    {
+      "script": "test:roadready:e2e",
+      "exitCode": 0,
+      "durationMs": 68980
+    },
+    {
+      "script": "test:e2e",
+      "exitCode": 0,
+      "durationMs": 56569
+    }
+  ]
+}

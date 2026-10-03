@@ -1,0 +1,56 @@
+name: Scout Certification
+
+on:
+  pull_request:
+    branches: [chore/ip-provenance-readiness-boundary, mvp-integration-w100, main]
+    paths:
+      - 'app/api/scout/**'
+      - 'app/teen/scout/**'
+      - 'components/Scout**'
+      - 'components/RoadReady**'
+      - 'lib/scout/**'
+      - 'lib/roadready/**'
+      - 'scripts/scout-certify.mjs'
+      - 'scripts/check-legacy-roadready.mjs'
+      - 'package.json'
+      - '.env.example'
+      - 'README.md'
+      - '.github/workflows/scout-certify.yml'
+  push:
+    branches: [feat/scout-namespace-compat]
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Legacy namespace guard
+        run: npm run legacy-namespace:check
+
+      - name: Scout API compatibility tests
+        run: npm run test:scout
+
+      - name: Build and generate route types
+        run: npm run build
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+

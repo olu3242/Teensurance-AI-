@@ -1,0 +1,52 @@
+name: Neon PR database branches
+
+on:
+  # Runs trusted base-branch workflow code, including for fork PRs.
+  # Never check out PR code or run PR-controlled scripts in this workflow.
+  pull_request_target:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-pr-${{ github.repository_id }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  manage-branch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+    steps:
+      - name: Check Neon configuration
+        shell: bash
+        run: |
+          if [[ -z "$NEON_PROJECT_ID" || -z "$NEON_API_KEY" ]]; then
+            echo "::error::Configure the NEON_PROJECT_ID repository variable and NEON_API_KEY repository secret."
+            exit 1
+          fi
+
+      - name: Create or reuse PR database branch
+        if: github.event.action != 'closed'
+        uses: neondatabase/create-branch-action@fb620d43d4c565abaf088b848a4e28e5c4ea4d9c # v6
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch_name: preview/repo-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}
+          parent_branch: ${{ vars.NEON_PARENT_BRANCH }}
+          database: ${{ vars.NEON_DATABASE || 'neondb' }}
+          role: ${{ vars.NEON_DATABASE_ROLE || 'neondb_owner' }}
+          # Preview branches need the schema, not household/minor records.
+          branch_type: schema-only
+          suspend_timeout: 300
+
+      - name: Delete closed PR database branch
+        if: github.event.action == 'closed'
+        uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776 # v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: preview/repo-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}

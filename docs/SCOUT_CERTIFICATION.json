@@ -1,0 +1,52 @@
+{
+  "at": "2026-09-29T10:09:30.668Z",
+  "scope": "Scout namespace compatibility and automated product gates; hosted release and human/legal review remain separate",
+  "status": "BLOCKED",
+  "gates": [
+    {
+      "script": "legacy-namespace:check",
+      "exitCode": 0,
+      "durationMs": 407
+    },
+    {
+      "script": "security:certify",
+      "exitCode": 0,
+      "durationMs": 15947
+    },
+    {
+      "script": "test:scout",
+      "exitCode": 0,
+      "durationMs": 5244
+    },
+    {
+      "script": "typecheck",
+      "exitCode": 0,
+      "durationMs": 6220
+    },
+    {
+      "script": "lint",
+      "exitCode": 0,
+      "durationMs": 28043
+    },
+    {
+      "script": "test",
+      "exitCode": 0,
+      "durationMs": 9154639
+    },
+    {
+      "script": "build",
+      "exitCode": 0,
+      "durationMs": 432098
+    },
+    {
+      "script": "test:scout:e2e",
+      "exitCode": 0,
+      "durationMs": 130272
+    },
+    {
+      "script": "test:e2e",
+      "exitCode": 1,
+      "durationMs": 5869932
+    }
+  ]
+}

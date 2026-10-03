@@ -1,0 +1,16 @@
+import type {RecordBase} from './db';
+export type User={id:string;name:string;email:string};
+export type Role='guardian'|'teen'|'supervisor';
+export type Household=RecordBase&{name:string;createdAt:string};
+export type Member=RecordBase&{role:Role;name:string;active:boolean};
+export type Relationship=RecordBase&{adultId:string;teenId:string;kind:'guardian'|'supervisor';active:boolean;createdAt:string};
+export type Profile=RecordBase&{name:string;birthDate:string;jurisdiction:string;stage:'pre-permit'|'permit'|'licensed';goalMinutes:number;permitDate:string;suspensionDays:number;consent:boolean;consentVersion:string;consentedAt?:string;adultSharing:boolean};
+export type Invite=RecordBase&{hash:string;role:Role;teenId:string;expiresAt:string;acceptedBy?:string};
+export type Drive=RecordBase&{teenId:string;supervisorId:string;skill:string;status:'active'|'draft'|'pending'|'verified'|'disputed'|'cancelled';startedAt:string;endedAt?:string;minutes:number;nightMinutes:number;weatherMinutes:number;note:string;revision:number;reviewReason?:string;reviewedBy?:string;reviewedAt?:string;corrections:{minutes:number;nightMinutes:number;weatherMinutes:number;reason:string;actorId:string;at:string}[]};
+export type Evidence=RecordBase&{teenId:string;milestone:string;description:string;sourceUrl:string;provenance:'SELF_REPORTED'|'SUPERVISOR_CONFIRMED';status:'pending'|'accepted'|'rejected';createdAt:string;reviewedBy?:string;reviewedAt?:string};
+export type Reminder=RecordBase&{teenId:string;title:string;dueAt:string;done:boolean;enabled:boolean};
+export type LegalRequirement={id:string;kind:'age'|'holding_period'|'practice'|'education'|'test'|'documents'|'restriction'|'insurance';label:string;stages?:Profile['stage'][]};
+export type Rule=RecordBase&{jurisdiction:string;stateName?:string;legalRequirements?:LegalRequirement[];aliases?:string[];version:string;sourceUrl:string;sourceTitle:string;reviewedAt:string;validUntil:string;effectiveFrom:string;learnerMinimumAge?:number;minimumAge:number;holdingMonths?:number;totalMinutes:number;nightMinutes:number;weatherMinutes?:number;requiredEvidence?:string[];authorityLabel?:string;status:'verified'|'unverified';lifecycleStatus?:'draft'|'review'|'approved'|'published'|'superseded'|'retired';reviewedBy:string};
+export type SafetyDecision='ALLOW'|'DEFER'|'REQUIRE_PARENT'|'REQUIRE_CONSENT'|'REQUIRE_VERIFICATION'|'REQUIRE_OFFICIAL_SOURCE'|'ESCALATE'|'DENY';
+export type Milestone={id:string;title:string;agent:string;status:'READY'|'BLOCKED'|'AWAITING_VERIFICATION'|'COMPLETED'|'REQUIRES_OFFICIAL_SOURCE';reason:string;dependencies:string[]};
+export type Dashboard={user:User;households:Household[];household?:Household;membership?:Member;members:Member[];profiles:Profile[];relationships:Relationship[];drives:Drive[];evidence:Evidence[];reminders:Reminder[];journeys:{teenId:string;milestones:Milestone[];next:Milestone;totals:{loggedMinutes:number;verifiedMinutes:number;nightMinutes:number;weatherMinutes:number;pending:number};practice?:import('./practice').PracticeProjection;stateExperience?:import('./state-experience').StateExperience;ruleLifecycle?:import('./legal-rule-lifecycle').RuleLifecycleResolution;rule?:Rule}[];audit:Record<string,unknown>[];activeDrive?:Drive};
