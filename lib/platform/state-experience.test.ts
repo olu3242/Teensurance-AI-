@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {resolveStateExperience} from './state-experience';
+import {resolveStateExperience,supportedJurisdictions,supportedJurisdiction} from './state-experience';
 import {texasRule} from './texas';
 import {pennsylvaniaRule} from './pennsylvania';
 import type {Profile} from './types';
@@ -7,6 +7,13 @@ import type {Profile} from './types';
 const profile=(jurisdiction:string,stage:Profile['stage']):Profile=>({
  id:'p',householdId:'h',ownerId:'t',name:'Teen',birthDate:'2010-01-01',jurisdiction,stage,
  goalMinutes:1800,permitDate:'2026-01-01',suspensionDays:0,consent:true,consentVersion:'v1',adultSharing:false
+ it('offers all 50 states without pretending pending states have reviewed law',()=>{
+  expect(supportedJurisdictions).toHaveLength(50);
+  expect(new Set(supportedJurisdictions.map(s=>s.code)).size).toBe(50);
+  expect(supportedJurisdiction('US-TX')?.rulePackage).toBe('reviewed');
+  expect(supportedJurisdiction('PA')?.rulePackage).toBe('reviewed');
+  expect(supportedJurisdiction('CA')?.rulePackage).toBe('pending');
+ });
 });
 
 describe('state-driven legal experience',()=>{
