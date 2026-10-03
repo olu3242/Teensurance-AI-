@@ -21,6 +21,7 @@ export type RuleLifecycleResolution={
 
 export function legalRuleDigest(rule:Rule){return createHash('sha256').update(JSON.stringify(rule)).digest('hex')}
 export function legalRuleCatalog(){return jurisdictionRules.map(rule=>({rule,digest:legalRuleDigest(rule)}))}
+export async function governedLegalRuleCatalog(){const promoted=await promotedLegalRules();return [...jurisdictionRules,...promoted].map(rule=>({rule,digest:legalRuleDigest(rule)}))}
 
 function reviewFor(rule:Rule,reviews:LegalRuleReview[]){const digest=legalRuleDigest(rule);return reviews.find(r=>r.ruleId===rule.id&&r.digest===digest)}
 
@@ -46,11 +47,11 @@ export function resolveRuleLifecycleFromCatalog(value:string,catalog:Rule[],revi
 export async function runtimeRuleResolution(value:string,now=new Date()){const reviews=await all<LegalRuleReview>('legal_rule_review');const promoted=await promotedLegalRules();return resolveRuleLifecycleFromCatalog(value,[...jurisdictionRules,...promoted],reviews,now)}
 export async function runtimeRules(now=new Date()){const reviews=await all<LegalRuleReview>('legal_rule_review');return jurisdictionRules.filter(r=>resolveRuleLifecycle(r.jurisdiction,reviews,now).rule?.id===r.id)}
 
-export async function inspectLegalRules(user:User){requireReviewer(user);const reviews=await all<LegalRuleReview>('legal_rule_review');return legalRuleCatalog().map(({rule,digest})=>({rule,digest,review:reviewFor(rule,reviews)||null,resolution:resolveRuleLifecycle(rule.jurisdiction,reviews)}))}
+export async function inspectLegalRules(user:User){requireReviewer(user);const reviews=await all<LegalRuleReview>('legal_rule_review');const catalog=await governedLegalRuleCatalog();return catalog.map(({rule,digest})=>({rule,digest,review:reviewFor(rule,reviews)||null,resolution:resolveRuleLifecycle(rule.jurisdiction,reviews)}))}
 
 const input=z.object({ruleId:z.string().min(1),digest:z.string().length(64),to:z.enum(['review','approved','published','superseded','retired']),note:z.string().trim().min(10).max(1000),humanAttestation:z.boolean()}).strict();
 export async function changeLegalRuleReview(user:User,raw:unknown){requireReviewer(user);const parsed=input.safeParse(raw);if(!parsed.success)throw new AppError('Invalid legal-rule review request.',400);const c=parsed.data;
- return transaction(async()=>{const entry=legalRuleCatalog().find(e=>e.rule.id===c.ruleId&&e.digest===c.digest);if(!entry)throw new AppError('Legal-rule version changed. Reload review.',409);
+ return transaction(async()=>{const entry=(await governedLegalRuleCatalog()).find(e=>e.rule.id===c.ruleId&&e.digest===c.digest);if(!entry)throw new AppError('Legal-rule version changed. Reload review.',409);
   const records=await all<LegalRuleReview>('legal_rule_review');const old=records.find(r=>r.ruleId===c.ruleId&&r.digest===c.digest);const from=old?.status||'draft';
   const allowed:Record<LegalRuleReviewStatus,LegalRuleReviewStatus[]>={draft:['review'],review:['approved','retired'],approved:['published','retired'],published:['superseded','retired'],superseded:[],retired:['review']};
   if(!allowed[from].includes(c.to))throw new AppError('Invalid legal-rule review transition.',409);
