@@ -1,8 +1,10 @@
-import type {Rule} from './types';
+import type {Rule,User} from './types';
 import type {LegalRuleReview,RuleLifecycleResolution} from './legal-rule-lifecycle';
 import {resolveRuleLifecycle} from './legal-rule-lifecycle';
 import {jurisdictionRules} from './jurisdictions';
 import {supportedJurisdictions} from './state-experience';
+import {all} from './db';
+import {requireReviewer} from './admin';
 
 export type StateRolloutStatus='pending'|'sourced'|'review'|'approved'|'published'|'stale'|'superseded';
 export type StateRolloutItem={
@@ -45,3 +47,5 @@ export function stateRolloutSummary(items:StateRolloutItem[]):StateRolloutSummar
  const needsAttention=items.filter(x=>['stale','superseded'].includes(x.status)).length;
  return {total:items.length,published,pending,needsAttention,coveragePercent:items.length?Math.round(published/items.length*100):0};
 }
+
+export async function inspectStateRollout(user:User){requireReviewer(user);const reviews=await all<LegalRuleReview>('legal_rule_review');const states=stateRolloutManifest(reviews);return {summary:stateRolloutSummary(states),states};}
