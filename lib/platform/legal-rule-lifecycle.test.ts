@@ -1,4 +1,5 @@
 import {describe,it,expect} from 'vitest';
+import {createHash} from 'node:crypto';
 import {resolveRuleLifecycle} from './legal-rule-lifecycle';
 
 describe('legal rule lifecycle',()=>{
