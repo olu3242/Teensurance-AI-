@@ -5,8 +5,9 @@ import {AppError,hash} from './auth';
 import type {Command} from './commands';
 import type {Dashboard,Drive,Evidence,Household,Invite,Member,Profile,Relationship,Reminder,SafetyDecision,User} from './types';
 import {ageOn,journey} from './journey';
-import {jurisdictionRules,ruleForJurisdiction} from './jurisdictions';
+import {jurisdictionRules} from './jurisdictions';
 import {resolveStateExperience} from './state-experience';
+import {runtimeRules,runtimeRuleResolution} from './legal-rule-lifecycle';
 import {agentContracts} from './agents';
 
 const now=()=>new Date().toISOString();
@@ -82,7 +83,7 @@ async function apply(user:User,c:Command):Promise<unknown>{
   await requirePilotAccess(c.householdId);
   const p=(await scope(user,c.householdId,c.teenId));if(user.id!==c.teenId)fail('The driver must create their own session.');if(!processingAllowed(p))fail('Guardian consent is required.');
   if(p.stage==='pre-permit'||!p.permitDate)fail('Record your valid permit or license information before logging practice.');
-  const jurisdictionRule=ruleForJurisdiction(p.jurisdiction);if(jurisdictionRule?.learnerMinimumAge&&ageOn(p.birthDate)<jurisdictionRule.learnerMinimumAge)fail(`This ${jurisdictionRule.authorityLabel||jurisdictionRule.jurisdiction} learner pathway requires age ${jurisdictionRule.learnerMinimumAge} or older.`);
+  const jurisdictionRule=(await runtimeRuleResolution(p.jurisdiction)).rule;if(jurisdictionRule?.learnerMinimumAge&&ageOn(p.birthDate)<jurisdictionRule.learnerMinimumAge)fail(`This ${jurisdictionRule.authorityLabel||jurisdictionRule.jurisdiction} learner pathway requires age ${jurisdictionRule.learnerMinimumAge} or older.`);
   if(!(await connected(c.supervisorId,c.teenId,c.householdId))||!(await membership(c.supervisorId,c.householdId))||c.supervisorId===c.teenId)fail('Choose a linked adult supervisor.');
   if((await activeFor(user.id))||(await activeFor(c.supervisorId)))fail('A driver or supervisor already has an active session.',409);
   const startedAt=c.action==='drive.manual'?c.startedAt:now();const endedAt=c.action==='drive.manual'?new Date(Date.parse(startedAt)+c.minutes*60000).toISOString():undefined;
@@ -117,6 +118,6 @@ export async function dashboard(user:User,requested?:string):Promise<Dashboard>{
  const evidence=member.role==='supervisor'?[]:(await all<Evidence>('evidence',household.id)).filter(e=>ids.has(e.teenId)&&(e.milestone!=='coverage'||member.role==='guardian'));
  const reminders=member.role==='supervisor'?[]:(await all<Reminder>('reminder',household.id)).filter(r=>ids.has(r.teenId)&&r.ownerId===user.id&&processingAllowed(profiles.find(p=>p.ownerId===r.teenId)!)&&!drives.some(d=>d.teenId===r.teenId&&d.status==='active'));
  const visibleMembers=(await all<Member>('member',household.id)).filter(m=>m.ownerId===user.id||ids.has(m.ownerId)||relationships.some(r=>r.adultId===m.ownerId)||member.role==='guardian'&&linked(m.ownerId));
- const result={...empty,household,membership:member,members:visibleMembers,profiles:member.role==='supervisor'?[]:profiles,relationships,drives,evidence,reminders,journeys:member.role==='supervisor'?[]:(await Promise.all(profiles.map(async p=>{const t=await totals(household.id,p.ownerId,drives);const j=journey(p,drives,evidence,jurisdictionRules,t);return {teenId:p.ownerId,...j,stateExperience:resolveStateExperience(p,j.rule,j.practice),totals:t}}))),audit:(await db().prepare('SELECT * FROM audit WHERE household_id=? AND actor_id=? ORDER BY at DESC LIMIT 30').all(household.id,user.id))};
+ const result={...empty,household,membership:member,members:visibleMembers,profiles:member.role==='supervisor'?[]:profiles,relationships,drives,evidence,reminders,journeys:member.role==='supervisor'?[]:(await Promise.all(profiles.map(async p=>{const t=await totals(household.id,p.ownerId,drives);const rules=await runtimeRules();const lifecycle=await runtimeRuleResolution(p.jurisdiction);const j=journey(p,drives,evidence,rules,t);return {teenId:p.ownerId,...j,stateExperience:resolveStateExperience(p,j.rule,j.practice),ruleLifecycle:lifecycle,totals:t}}))),audit:(await db().prepare('SELECT * FROM audit WHERE household_id=? AND actor_id=? ORDER BY at DESC LIMIT 30').all(household.id,user.id))};
  (await audit(user.id,household.id,'dashboard.read','ALLOW','Only relationship-scoped resources returned.'));return result;
 }))}
