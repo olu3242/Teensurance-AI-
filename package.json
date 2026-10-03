@@ -24,7 +24,8 @@
     "scout:certify": "node scripts/scout-certify.mjs",
     "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs",
     "test:waitlist": "vitest run lib/waitlist/service.test.ts",
-    "brand:certify": "node scripts/brand-certify.mjs"
+    "brand:certify": "node scripts/brand-certify.mjs",
+    "jurisdiction:certify": "node scripts/jurisdiction-certify.mjs"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
