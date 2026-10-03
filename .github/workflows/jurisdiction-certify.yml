@@ -1,0 +1,31 @@
+name: Jurisdiction Certification
+
+on:
+  pull_request:
+    branches: [mvp-integration-w100, main]
+    paths:
+      - 'lib/platform/**'
+      - 'lib/roadready/**'
+      - 'app/api/scout/**'
+      - 'components/Scout**'
+      - 'e2e/roadready.spec.ts'
+      - 'scripts/jurisdiction-certify.mjs'
+      - 'package.json'
+      - '.github/workflows/jurisdiction-certify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run jurisdiction:certify
