@@ -5,7 +5,7 @@ import {AppError,hash} from './auth';
 import type {Command} from './commands';
 import type {Dashboard,Drive,Evidence,Household,Invite,Member,Profile,Relationship,Reminder,SafetyDecision,User} from './types';
 import {ageOn,journey} from './journey';
-import {jurisdictionRules,ruleForJurisdiction} from './jurisdictions';
+import {jurisdictionRules} from './jurisdictions';
 import {resolveStateExperience} from './state-experience';
 import {runtimeRules,runtimeRuleResolution} from './legal-rule-lifecycle';
 import {agentContracts} from './agents';
