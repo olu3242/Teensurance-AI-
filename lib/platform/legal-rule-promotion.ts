@@ -12,8 +12,11 @@ export type PromotedLegalRule={
  provenance:{requirementId:string;sourceId:string;sourceUrl:string;sourceTitle:string;authority:string;citationNote:string}[]
 };
 
+export async function promotedLegalRuleRecords(){return all<PromotedLegalRule>('promoted_legal_rule')}
 export async function promotedLegalRules(){
- return (await all<PromotedLegalRule>('promoted_legal_rule')).map(x=>x.rule);
+ const records=await promotedLegalRuleRecords();const sources=await all<LegalSourceCandidate>('legal_source_candidate');
+ const {runtimeEligiblePromotedRules}=await import('./legal-change-recertification');
+ return runtimeEligiblePromotedRules(records,sources);
 }
 
 export async function promoteLegalRuleDraft(user:User,draftId:string,humanAttestation:boolean){
