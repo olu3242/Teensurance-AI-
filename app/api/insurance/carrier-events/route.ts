@@ -1,7 +1,7 @@
 import {AppError} from '@/lib/platform/auth';
 import {errorResponse,json} from '@/lib/platform/http';
 import {applyCarrierEvent,carrierWebhookSecret,verifyCarrierSignature,type CarrierEvent} from '@/lib/insurance/bind';
-import {routeCarrierCommand} from '@/lib/insurance/runtime';
+import {processCarrierEventChain} from '@/lib/insurance/event-chain';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -16,15 +16,9 @@ export async function POST(request:Request){
     const secret=carrierWebhookSecret(event.carrierId);
     if(!verifyCarrierSignature(raw,signature,secret))throw new AppError('Invalid carrier signature.',401);
 
-    const action=event.type==='policy.active'?'policy.active':
-      event.type==='policy.bound'?'policy.bound':
-      event.type==='policy.cancelled'?'policy.cancelled':
-      event.type==='application.declined'?'application.declined':
-      event.type==='application.failed'?'application.failed':'carrier.event';
     const result=await applyCarrierEvent(event);
-    const householdId='handoff' in result&&result.handoff?.householdId?result.handoff.householdId:'';
-    if(!householdId)throw new AppError('Carrier event could not be associated with a household.',409);
-    const trace=await routeCarrierCommand(event.carrierId,{action,householdId,source:'carrier',subjectId:event.externalReference});
-    return json({...result,trace});
+    if('duplicate' in result&&result.duplicate)return json(result);
+    const chain=await processCarrierEventChain(event,{handoff:'handoff' in result?result.handoff:undefined,policy:'policy' in result?result.policy:undefined});
+    return json({...result,chain});
   }catch(error){return errorResponse(error)}
 }
