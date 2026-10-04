@@ -32,6 +32,6 @@ describe('insurance agentic runtime',()=>{
     await expect(routeInsuranceCommand(guardian,{action:'policy.active',householdId:'h',source:'user'})).rejects.toMatchObject({status:403});
     const trace=await routeInsuranceCommand(guardian,{action:'policy.active',householdId:'h',source:'carrier'});
     expect(trace.decision).toBe('ALLOW');
-    expect(trace.workflowState).toBe('CREATED');
+    expect(trace.workflowState).toBe('COMPLETED');
   });
 });
