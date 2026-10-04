@@ -45,11 +45,11 @@ export async function routeInsuranceCommand(user:User,command:InsuranceRuntimeCo
   let rationale='Command is permitted within the insurance orchestration contract.';
   let workflowState:InsuranceWorkflowState='IN_PROGRESS';
 
-  const guardianActions=['quote.request','offer.select','bind.prepare','value.baseline','renewal.reshop','renewal.decide'];
+  const guardianActions=['quote.request','quote.compare','offer.select','bind.prepare','policy.status.read','value.baseline','value.projected','value.realized','renewal.detect','renewal.reshop','renewal.decide','notification.generate','notification.read','notification.dismiss'];
   if(guardianActions.includes(command.action)&&!isGuardian){
     decision='REQUIRE_GUARDIAN';workflowState='BLOCKED';rationale='This insurance action requires an active guardian household role.';
   }
-  if(['policy.active','policy.bound','policy.cancelled','renewal.nonrenewal'].includes(command.action)&&command.source!=='carrier'){
+  if(['carrier.event','policy.active','policy.bound','policy.cancelled','renewal.nonrenewal'].includes(command.action)&&command.source!=='carrier'){
     decision='REQUIRE_CARRIER';workflowState='BLOCKED';rationale='Only a carrier-confirmed event may authoritatively change policy lifecycle state.';
   }
 
