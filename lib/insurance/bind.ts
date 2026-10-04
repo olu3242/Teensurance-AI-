@@ -34,6 +34,8 @@ export type PolicyRecord={
   status:'BOUND'|'ACTIVE'|'CANCELLED';
   effectiveAt?:string;
   confirmedAt:string;
+  monthlyPremiumCents?:number;
+  sixMonthPremiumCents?:number;
 };
 
 export type CarrierEvent={
@@ -45,6 +47,9 @@ export type CarrierEvent={
   externalPolicyId?:string;
   effectiveAt?:string;
   reason?:string;
+  monthlyPremiumCents?:number;
+  sixMonthPremiumCents?:number;
+  discounts?:{code:string;label:string;amountCents?:number;source:'carrier'}[];
 };
 
 const transitions:Record<BindState,BindState[]>={
@@ -184,7 +189,9 @@ export async function applyCarrierEvent(event:CarrierEvent){
           externalPolicyId:event.externalPolicyId!,
           status:target,
           effectiveAt:event.effectiveAt||prior?.effectiveAt,
-          confirmedAt:event.occurredAt
+          confirmedAt:event.occurredAt,
+          monthlyPremiumCents:event.monthlyPremiumCents??prior?.monthlyPremiumCents,
+          sixMonthPremiumCents:event.sixMonthPremiumCents??prior?.sixMonthPremiumCents
         };
       }
       await put('insurance_policy',policy);
