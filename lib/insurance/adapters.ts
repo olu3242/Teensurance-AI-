@@ -63,9 +63,35 @@ export class SandboxCarrierAdapter implements CarrierAdapter{
   }
 }
 
+class CertificationCarrierAdapter implements CarrierAdapter{
+  id='certification-carrier';
+  displayName='Certification Carrier';
+  supportedJurisdictions=['TX','PA'];
+  async quote(request:NormalizedQuoteRequest):Promise<CarrierQuoteResult>{
+    const monthlyPremiumCents=14500;
+    return {carrierId:this.id,status:'quoted',quote:{
+      carrierId:this.id,
+      carrierDisplayName:this.displayName,
+      quoteId:'cert-'+createHash('sha256').update(request.requestId).digest('hex').slice(0,16),
+      monthlyPremiumCents,
+      sixMonthPremiumCents:monthlyPremiumCents*6,
+      deductibleCents:100000,
+      coverageLevel:request.coverageLevel,
+      synthetic:false,
+      bindable:true,
+      expiresAt:new Date(Date.parse(request.createdAt)+30*60*1000).toISOString(),
+      disclosures:[
+        'Certification-only carrier fixture. It is available only when TEENSURANCE_INSURANCE_E2E=1.',
+        'No real insurance carrier, quote, policy, premium, or coverage is represented.'
+      ]
+    }};
+  }
+}
+
 export const defaultCarrierAdapters:CarrierAdapter[]=[
   new SandboxCarrierAdapter('sandbox-alpha','Sandbox Carrier Alpha',['TX','PA'],11800),
-  new SandboxCarrierAdapter('sandbox-beta','Sandbox Carrier Beta',['TX','PA'],13200)
+  new SandboxCarrierAdapter('sandbox-beta','Sandbox Carrier Beta',['TX','PA'],13200),
+  ...(process.env.TEENSURANCE_INSURANCE_E2E==='1'?[new CertificationCarrierAdapter()]:[])
 ];
 
 export async function collectCarrierQuotes(
