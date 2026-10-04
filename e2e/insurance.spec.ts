@@ -1,4 +1,5 @@
 import {test,expect,type Browser,type BrowserContext} from '@playwright/test';
+import {createHmac} from 'node:crypto';
 import type {CarrierQuoteResult} from '../lib/insurance/types';
 
 type WorkspaceCreateResponse={result:{id:string}};
@@ -94,5 +95,43 @@ test('value evidence and notification generation stay guardian-only and deduplic
   const second=await (await guardian.request.get('/api/insurance/notifications?householdId='+householdId)).json() as NotificationsResponse;
   expect(second.created).toHaveLength(0);
   expect(second.notifications.length).toBe(first.notifications.length);
+  await guardian.close();await teen.close();
+});
+
+test('AI-native lifecycle preserves readiness, guardian, carrier, value, and replay boundaries',async({browser})=>{
+  const {guardian,teen,householdId,teenId}=await setup(browser);
+  const prep=await guardian.request.get('/api/insurance/preparation?householdId='+householdId+'&teenId='+teenId);
+  expect(prep.status()).toBe(200);
+  const prepBody=await prep.json() as {opportunity:{underwritingBoundary:string}};
+  expect(prepBody.opportunity.underwritingBoundary).toContain('do not determine insurance eligibility');
+  expect((await teen.request.get('/api/insurance/preparation?householdId='+householdId+'&teenId='+teenId)).status()).toBe(403);
+
+  await guardian.request.post('/api/insurance/value',{headers:{origin:'http://127.0.0.1:3100'},data:{action:'baseline',householdId,teenId,amountCents:30000,period:'monthly',referenceId:'lifecycle-baseline'}});
+  const quote=await guardian.request.post('/api/insurance/quotes',{headers:{origin:'http://127.0.0.1:3100','idempotency-key':crypto.randomUUID()},data:{householdId,teenId,intent:'compare_current',coverageLevel:'standard',vehicles:[{year:2025,make:'Honda',model:'Civic',primaryUse:'school'}],currentPolicy:{carrierName:'Current Carrier',teenAlreadyListed:false},shareReadinessEvidence:false}});
+  expect(quote.status()).toBe(201);
+  const {session}=await quote.json() as QuoteResponse;
+  const offer=session.results.find(result=>result.status==='quoted'&&result.carrierId==='certification-carrier');
+  if(!offer||offer.status!=='quoted')throw new Error('Expected certification quote.');
+  const selected=await guardian.request.post('/api/insurance/offers',{headers:{origin:'http://127.0.0.1:3100'},data:{householdId,sessionId:session.id,quoteId:offer.quote.quoteId,disclosuresAcknowledged:true}});
+  const selection=(await selected.json() as SelectionResponse).selection;
+  const bind=await guardian.request.post('/api/insurance/bind',{headers:{origin:'http://127.0.0.1:3100'},data:{householdId,selectionId:selection.id}});
+  const handoff=(await bind.json() as {handoff:{externalReference:string}}).handoff;
+
+  const activeEvent={eventId:crypto.randomUUID(),carrierId:'certification-carrier',externalReference:handoff.externalReference,type:'policy.active',occurredAt:new Date().toISOString(),externalPolicyId:'CERT-POLICY-1',effectiveAt:new Date().toISOString(),renewalAt:new Date(Date.now()+180*86400000).toISOString(),monthlyPremiumCents:25000};
+  const raw=JSON.stringify(activeEvent);
+  const forged=await guardian.request.post('/api/insurance/carrier-events',{headers:{'content-type':'application/json','x-teensurance-carrier-signature':'0'.repeat(64)},data:raw});
+  expect(forged.status()).toBe(401);
+  const signature=createHmac('sha256','insurance-cert-secret').update(raw).digest('hex');
+  const carrier=await guardian.request.post('/api/insurance/carrier-events',{headers:{'content-type':'application/json','x-teensurance-carrier-signature':signature},data:raw});
+  expect(carrier.status()).toBe(200);
+  const carrierBody=await carrier.json() as {policy:{status:string};chain:{status:string;steps:Array<{name:string}>}};
+  expect(carrierBody.policy.status).toBe('ACTIVE');
+  expect(carrierBody.chain.steps.map(step=>step.name)).toEqual(expect.arrayContaining(['policy_runtime','realized_value','notifications','renewal_schedule']));
+
+  const status=await (await guardian.request.get('/api/insurance/bind?householdId='+householdId)).json() as InsuranceStatusResponse;
+  expect(status.policies).toHaveLength(1);
+  const duplicate=await guardian.request.post('/api/insurance/carrier-events',{headers:{'content-type':'application/json','x-teensurance-carrier-signature':signature},data:raw});
+  expect(duplicate.status()).toBe(200);
+  expect((await duplicate.json() as {duplicate:boolean}).duplicate).toBe(true);
   await guardian.close();await teen.close();
 });
