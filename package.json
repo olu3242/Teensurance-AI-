@@ -27,7 +27,9 @@
     "brand:certify": "node scripts/brand-certify.mjs",
     "jurisdiction:certify": "node scripts/jurisdiction-certify.mjs",
     "test:insurance-impact": "vitest run lib/insurance/service.test.ts app/api/insurance/impact/route.test.ts",
-    "insurance-impact:certify": "npm run typecheck && npm run lint && npm run test:insurance-impact"
+    "insurance-impact:certify": "npm run typecheck && npm run lint && npm run test:insurance-impact",
+    "test:insurance-readiness": "vitest run lib/insurance/readiness.test.ts app/api/insurance/readiness/route.test.ts",
+    "insurance-readiness:certify": "npm run typecheck && npm run lint && npm run test:insurance-impact && npm run test:insurance-readiness"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
