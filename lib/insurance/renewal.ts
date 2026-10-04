@@ -46,7 +46,7 @@ export async function renewalOpportunities(user:User,householdId:string,now=new 
   const policies=(await all<PolicyRecord>('insurance_policy',householdId)).filter(item=>item.ownerId===user.id&&item.status==='ACTIVE');
   const handoffs=await all<BindHandoff>('insurance_bind_handoff',householdId);
   const events=await all<{event:{externalReference:string;renewalAt?:string;nonRenewalAt?:string}}>('insurance_carrier_event',householdId);
-  return policies.flatMap(policy=>{
+  return policies.flatMap<RenewalOpportunity>(policy=>{
     const handoff=handoffs.find(item=>item.id===policy.handoffId);
     if(!handoff)return [];
     const related=events.filter(item=>item.event.externalReference===handoff.externalReference).map(item=>item.event);
