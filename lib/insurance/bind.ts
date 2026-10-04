@@ -46,6 +46,8 @@ export type CarrierEvent={
   occurredAt:string;
   externalPolicyId?:string;
   effectiveAt?:string;
+  renewalAt?:string;
+  nonRenewalAt?:string;
   reason?:string;
   monthlyPremiumCents?:number;
   sixMonthPremiumCents?:number;
