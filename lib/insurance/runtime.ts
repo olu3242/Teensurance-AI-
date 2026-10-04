@@ -35,6 +35,21 @@ async function guardian(user:User,householdId:string){
   return member?.role==='guardian';
 }
 
+export async function routeCarrierCommand(carrierId:string,command:InsuranceRuntimeCommand):Promise<InsuranceRuntimeTrace>{
+  if(command.source!=='carrier')throw new AppError('Carrier runtime commands require carrier provenance.',403);
+  const trigger=insuranceTriggerFor(command.action);
+  const workflow=insuranceWorkflowFor(command.action);
+  const trace:InsuranceRuntimeTrace={
+    id:randomUUID(),householdId:command.householdId,ownerId:'carrier:'+carrierId,action:command.action,
+    triggerId:trigger.id,priority:trigger.priority,workflow:workflow.id,
+    workflowState:workflow.terminalActions.includes(command.action)?'COMPLETED':'IN_PROGRESS',
+    agent:trigger.agent,decision:'ALLOW',rationale:'Authenticated carrier event entered the insurance runtime.',
+    createdAt:new Date().toISOString()
+  };
+  await put('insurance_runtime_trace',trace);
+  return trace;
+}
+
 export async function routeInsuranceCommand(user:User,command:InsuranceRuntimeCommand):Promise<InsuranceRuntimeTrace>{
   const trigger=insuranceTriggerFor(command.action);
   const workflow=insuranceWorkflowFor(command.action);
