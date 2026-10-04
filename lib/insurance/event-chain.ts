@@ -5,7 +5,7 @@ import type {User} from '../platform/types';
 import type {CarrierEvent,PolicyRecord,BindHandoff} from './bind';
 import {realizedSavings} from './value';
 import {generateInsuranceNotifications} from './notifications';
-import {routeCarrierCommand,routeInsuranceCommand} from './runtime';
+import {routeCarrierCommand,routeDomainCommand} from './runtime';
 
 export type ChainStepState='COMPLETED'|'SKIPPED'|'FAILED';
 
@@ -78,7 +78,7 @@ export async function processCarrierEventChain(
   const guardian=await guardianUser(ownerId);
   if(event.type==='policy.active'&&context.policy&&guardian){
     try{
-      await routeInsuranceCommand(guardian,{action:'value.realized',householdId,teenId:context.policy.teenId,source:'domain',subjectId:context.policy.id});
+      await routeDomainCommand(ownerId,{action:'value.realized',householdId,teenId:context.policy.teenId,source:'domain',subjectId:context.policy.id});
       await realizedSavings(guardian,householdId,context.policy.id);
       steps.push({name:'realized_value',state:'COMPLETED',detail:'SAVE created carrier-confirmed realized value evidence.'});
     }catch(error){
@@ -90,7 +90,7 @@ export async function processCarrierEventChain(
 
   if(guardian){
     try{
-      await routeInsuranceCommand(guardian,{action:'notification.generate',householdId,source:'domain',subjectId:context.policy?.id||context.handoff?.id});
+      await routeDomainCommand(ownerId,{action:'notification.generate',householdId,source:'domain',subjectId:context.policy?.id||context.handoff?.id});
       const notices=await generateInsuranceNotifications(guardian,householdId);
       steps.push({name:'notifications',state:'COMPLETED',detail:`SIGNAL generated ${notices.created.length} new notification(s); dedupe suppressed ${notices.suppressed}.`});
     }catch(error){
