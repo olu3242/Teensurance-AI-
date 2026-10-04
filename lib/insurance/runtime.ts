@@ -50,6 +50,24 @@ export async function routeCarrierCommand(carrierId:string,command:InsuranceRunt
   return trace;
 }
 
+export async function routeDomainCommand(ownerId:string,command:InsuranceRuntimeCommand):Promise<InsuranceRuntimeTrace>{
+  if(command.source!=='domain'&&command.source!=='time')throw new AppError('Domain runtime commands require domain or time provenance.',403);
+  const forbidden=['quote.request','offer.select','bind.prepare','renewal.reshop','renewal.decide'];
+  if(forbidden.includes(command.action))throw new AppError('Automated runtime cannot perform guardian insurance purchase decisions.',403);
+  const trigger=insuranceTriggerFor(command.action);
+  const workflow=insuranceWorkflowFor(command.action);
+  const trace:InsuranceRuntimeTrace={
+    id:randomUUID(),householdId:command.householdId,ownerId:'system:'+ownerId,action:command.action,
+    triggerId:trigger.id,priority:trigger.priority,workflow:workflow.id,
+    workflowState:workflow.terminalActions.includes(command.action)?'COMPLETED':'IN_PROGRESS',
+    agent:trigger.agent,decision:'ALLOW',
+    rationale:'Governed domain event entered the insurance runtime without assuming a guardian purchase decision.',
+    createdAt:new Date().toISOString()
+  };
+  await put('insurance_runtime_trace',trace);
+  return trace;
+}
+
 export async function routeInsuranceCommand(user:User,command:InsuranceRuntimeCommand):Promise<InsuranceRuntimeTrace>{
   const trigger=insuranceTriggerFor(command.action);
   const workflow=insuranceWorkflowFor(command.action);
