@@ -25,7 +25,9 @@
     "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs",
     "test:waitlist": "vitest run lib/waitlist/service.test.ts",
     "brand:certify": "node scripts/brand-certify.mjs",
-    "jurisdiction:certify": "node scripts/jurisdiction-certify.mjs"
+    "jurisdiction:certify": "node scripts/jurisdiction-certify.mjs",
+    "test:insurance-impact": "vitest run lib/insurance/service.test.ts app/api/insurance/impact/route.test.ts",
+    "insurance-impact:certify": "npm run typecheck && npm run lint && npm run test:insurance-impact"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
