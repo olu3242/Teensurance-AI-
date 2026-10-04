@@ -26,7 +26,8 @@ export async function projectedSavings(user:User,householdId:string,teenId:strin
  if(!result||result.status!=='quoted')throw new AppError('Quoted offer not found.',404);
  const replacement:CostEvidence={amountCents:result.quote.sixMonthPremiumCents,period:'six_month',source:'carrier_quote',referenceId:result.quote.quoteId,recordedAt:new Date().toISOString()};
  const calc=evidenceSavings(baseline,replacement);
- return {id:randomUUID(),householdId,ownerId:user.id,teenId,baseline,replacement,kind:'projected',...calc,discounts:[],createdAt:new Date().toISOString(),disclaimer:'Projected savings compare supplied current-policy cost with a carrier quote. They are not realized savings and may change before binding.'};
+ const value:SavingsEvidence={id:randomUUID(),householdId,ownerId:user.id,teenId,baseline,replacement,kind:'projected',...calc,discounts:[],createdAt:new Date().toISOString(),disclaimer:'Projected savings compare supplied current-policy cost with a carrier quote. They are not realized savings and may change before binding.'};
+ await put('insurance_savings_evidence',value);await audit(user.id,householdId,'insurance.value.projected','ALLOW','Recorded projected savings evidence from a carrier quote and guardian baseline.');return value;
 }
 
 export async function realizedSavings(user:User,householdId:string,policyId:string):Promise<SavingsEvidence>{
