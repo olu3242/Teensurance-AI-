@@ -11,7 +11,8 @@ export async function insuranceOperations(user:User){
   const traces=await all<InsuranceRuntimeTrace>('insurance_runtime_trace');
   const failures=await all<Failure>('insurance_runtime_failure');
   const chains=await all<InsuranceEventChain>('insurance_event_chain');
-  const triggers=await all<(ScheduledInsuranceTrigger&{attempts?:number;nextAttemptAt?:string;lastError?:string;correlationId?:string;status:'SCHEDULED'|'EXECUTED'|'CANCELLED'|'RETRY'|'DEAD_LETTER'})>('insurance_scheduled_trigger');
+  type OperationalTrigger=Omit<ScheduledInsuranceTrigger,'status'>&{attempts?:number;nextAttemptAt?:string;lastError?:string;correlationId?:string;status:'SCHEDULED'|'EXECUTED'|'CANCELLED'|'RETRY'|'DEAD_LETTER'};
+  const triggers=await all<OperationalTrigger>('insurance_scheduled_trigger');
   const byAgent=Object.fromEntries([...new Set(traces.map(t=>t.agent))].map(agent=>[agent,traces.filter(t=>t.agent===agent).length]));
   const byWorkflow=Object.fromEntries([...new Set(traces.map(t=>t.workflow))].map(workflow=>[workflow,traces.filter(t=>t.workflow===workflow).length]));
   return {
@@ -33,7 +34,8 @@ export async function insuranceOperations(user:User){
 
 export async function replayInsuranceTrigger(user:User,triggerId:string){
   requireAdmin(user);
-  const trigger=(await all<(ScheduledInsuranceTrigger&{attempts?:number;lastError?:string;correlationId?:string;status:string})>('insurance_scheduled_trigger')).find(t=>t.id===triggerId);
+  type ReplayableTrigger=Omit<ScheduledInsuranceTrigger,'status'>&{attempts?:number;lastError?:string;correlationId?:string;status:string};
+  const trigger=(await all<ReplayableTrigger>('insurance_scheduled_trigger')).find(t=>t.id===triggerId);
   if(!trigger)throw new Error('Insurance trigger not found.');
   if(trigger.status!=='DEAD_LETTER')throw new Error('Only dead-letter triggers can be replayed.');
   const updated={...trigger,status:'RETRY' as const,attempts:0,nextAttemptAt:new Date().toISOString(),lastError:undefined};
