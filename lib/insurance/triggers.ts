@@ -13,6 +13,7 @@ export type InsuranceTrigger={
 
 export const insuranceTriggerRegistry:InsuranceTrigger[]=[
   {id:'insurance.guardian.required',priority:'P0',source:'safety',workflow:'insurance_acquisition',agent:'GUARD',action:'guardian.missing'},
+  {id:'insurance.readiness.evaluate',priority:'P6',source:'user',workflow:'insurance_acquisition',agent:'COVER',action:'readiness.evaluate'},
   {id:'insurance.quote.requested',priority:'P3',source:'user',workflow:'quote_marketplace',agent:'QUOTE',action:'quote.request'},
   {id:'insurance.offers.ready',priority:'P4',source:'domain',workflow:'quote_marketplace',agent:'MATCH',action:'quote.compare'},
   {id:'insurance.offer.selected',priority:'P2',source:'user',workflow:'quote_marketplace',agent:'MATCH',action:'offer.select'},
