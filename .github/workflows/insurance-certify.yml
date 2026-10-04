@@ -1,0 +1,52 @@
+name: Insurance Certification
+
+on:
+  pull_request:
+    branches: [mvp-integration-w100, main]
+    paths:
+      - 'lib/insurance/**'
+      - 'app/api/insurance/**'
+      - 'app/parent/insurance/**'
+      - 'e2e/insurance.spec.ts'
+      - 'playwright.insurance.config.ts'
+      - 'scripts/insurance-certify.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/insurance-certify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Insurance certification
+        run: npm run insurance:certify
+
+      - name: Upload certification result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: insurance-certification
+          path: |
+            docs/INSURANCE_CERTIFICATION.json
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
