@@ -25,7 +25,10 @@
     "legacy-namespace:check": "node scripts/check-legacy-roadready.mjs",
     "test:waitlist": "vitest run lib/waitlist/service.test.ts",
     "brand:certify": "node scripts/brand-certify.mjs",
-    "jurisdiction:certify": "node scripts/jurisdiction-certify.mjs"
+    "jurisdiction:certify": "node scripts/jurisdiction-certify.mjs",
+    "test:insurance": "vitest run lib/insurance",
+    "test:insurance:e2e": "playwright test --config=playwright.insurance.config.ts",
+    "insurance:certify": "node scripts/insurance-certify.mjs"
   },
   "dependencies": {
     "@neon/config": "^1.8.2",
