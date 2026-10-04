@@ -7,6 +7,10 @@ on:
       - 'lib/insurance/**'
       - 'app/api/insurance/**'
       - 'app/parent/insurance/**'
+      - 'app/admin/operations/**'
+      - 'app/api/admin/insurance-operations/**'
+      - 'app/api/admin/gap-registry/**'
+      - 'app/api/cron/insurance/**'
       - 'e2e/insurance.spec.ts'
       - 'playwright.insurance.config.ts'
       - 'scripts/insurance-certify.mjs'
@@ -47,6 +51,7 @@ jobs:
           name: insurance-certification
           path: |
             docs/INSURANCE_CERTIFICATION.json
+            docs/AI_NATIVE_INSURANCE_CERTIFICATION.json
             test-results/
             playwright-report/
           if-no-files-found: ignore
