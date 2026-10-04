@@ -8,7 +8,9 @@ import {renewalOpportunities,startRenewalReshop,recordRenewalDecision} from './r
 import {generateInsuranceNotifications} from './notifications';
 import type {QuoteInput} from './types';
 
-export async function orchestrateInsurance(user:User,command:InsuranceRuntimeCommand,payload:Record<string,unknown>){
+type InsurancePayload=Record<string,unknown>;
+
+export async function orchestrateInsurance(user:User,command:InsuranceRuntimeCommand,payload:InsurancePayload){
   const trace=await routeInsuranceCommand(user,command);
 
   if(command.action==='quote.request')return {trace,result:await createQuoteSession(user,payload as unknown as QuoteInput,String(payload.idempotencyKey||''))};
