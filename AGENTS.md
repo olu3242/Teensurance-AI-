@@ -91,3 +91,47 @@ Authoritative jurisdiction requirements must come from official government/regul
 Supervised-driving logs are evidence inputs. They do not independently establish legal eligibility, safe-driver status, insurance eligibility, premium amounts, discount entitlement, or underwriting outcomes.
 
 "RoadReady" must not be used as customer-facing Teensurance branding. Existing `roadready` identifiers are legacy technical debt only; do not introduce new ones. See `docs/IP_PROVENANCE_POLICY.md` for the migration and review rules.
+
+
+## Insurance AI-native agent layer
+
+Insurance uses the same T + GUARD operating model, with specialist agents hidden behind T:
+
+| Agent | Responsibility | Authority boundary |
+|---|---|---|
+| **QUOTE** | Normalize guardian quote requests and coordinate carrier adapters | Cannot recommend, select, bind, or activate |
+| **MATCH** | Neutral offer comparison | Cannot auto-select or label an offer "best" |
+| **BIND** | Prepare and track carrier-controlled bind handoffs | Cannot activate coverage or fabricate carrier events |
+| **POLICY** | Project carrier-confirmed policy lifecycle | Cannot create, renew, or cancel coverage |
+| **SAVE** | Projected/realized savings evidence and milestones | Cannot invent discounts or claim Teensurance caused savings |
+| **RENEW** | Renewal/non-renewal re-shopping coordination | Cannot auto-renew or auto-switch |
+| **SIGNAL** | Deduplicated actionable insurance notifications | Cannot imply coverage or spam the household |
+
+Insurance runtime pattern:
+
+```
+User / carrier / clock / domain event
+        |
+        v
+Insurance Trigger Registry (P0-P9)
+        |
+        v
+GUARD authorization boundary
+        |
+        v
+Versioned Insurance Workflow
+        |
+        v
+Specialist Agent Contract
+        |
+        v
+Insurance Orchestrator
+        |
+        v
+Deterministic domain service / carrier adapter
+        |
+        v
+Evidence + runtime trace + audit + next trigger
+```
+
+Guardian approval is mandatory for quote submission, offer selection, bind preparation, baseline evidence, and renewal stay/switch decisions. Carrier-confirmed events are mandatory for authoritative policy activation, cancellation, and non-renewal state. AI agents may explain, route, compare neutrally, and propose actions; they do not autonomously purchase insurance or establish coverage.
