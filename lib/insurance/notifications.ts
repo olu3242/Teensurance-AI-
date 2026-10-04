@@ -9,7 +9,7 @@ import type {SavingsMilestone} from './value-dashboard';
 
 export type InsuranceNotificationKind=
   |'renewal_approaching'|'non_renewal'|'quote_expiring'|'bind_incomplete'
-  |'policy_activated'|'policy_cancelled'|'new_realized_savings'|'value_milestone';
+  |'policy_activated'|'policy_cancelled'|'new_realized_savings'|'value_milestone'|'insurance_preparation';
 
 export type InsuranceNotification={
   id:string;
@@ -45,6 +45,7 @@ export async function generateInsuranceNotifications(user:User,householdId:strin
   const events=await all<{event:{externalReference:string;type:string;occurredAt:string;renewalAt?:string;nonRenewalAt?:string}}>('insurance_carrier_event',householdId);
   const savings=(await all<SavingsEvidence>('insurance_savings_evidence',householdId)).filter(item=>item.ownerId===user.id&&item.kind==='realized');
   const milestones=(await all<SavingsMilestone&{ownerId:string}>('insurance_value_milestone',householdId)).filter(item=>item.ownerId===user.id);
+  const preparation=(await all<{id:string;ownerId:string;teenId:string;state:string;generatedAt:string}>('insurance_preparation_opportunity',householdId)).filter(item=>item.ownerId===user.id&&item.state!=='EARLY');
 
   for(const policy of policies){
     const handoff=handoffs.find(item=>item.id===policy.handoffId);
@@ -75,6 +76,10 @@ export async function generateInsuranceNotifications(user:User,householdId:strin
 
   for(const item of savings){
     if(item.savingsCents>0)proposals.push({householdId,ownerId:user.id,kind:'new_realized_savings',subjectId:item.id,title:'New carrier-confirmed value evidence',message:'A new realized premium comparison is available from carrier-confirmed policy evidence.',cta:{label:'View insurance value',href:'/parent/insurance?householdId='+householdId},priority:'normal',dedupeKey:'savings:'+item.id});
+  }
+
+  for(const item of preparation){
+    proposals.push({householdId,ownerId:user.id,kind:'insurance_preparation',subjectId:item.teenId,title:'Review teen insurance preparation',message:'A new insurance preparation opportunity is available. Readiness evidence is advisory and does not determine insurance eligibility or pricing.',cta:{label:'Review insurance preparation',href:'/parent/insurance?householdId='+householdId},priority:'normal',dedupeKey:'insurance-preparation:'+item.id});
   }
 
   for(const item of milestones){
