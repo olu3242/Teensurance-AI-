@@ -17,16 +17,20 @@ async function register(ctx:BrowserContext,name:string,email:string){
   expect(r.status()).toBe(200);
 }
 async function workspace(ctx:BrowserContext,payload:unknown){
-  return ctx.request.post('/api/workspace',{headers:{origin:'http://127.0.0.1:3100','idempotency-key':crypto.randomUUID()},data:payload});
+  const response=await ctx.request.post('/api/workspace',{headers:{origin:'http://127.0.0.1:3100','idempotency-key':crypto.randomUUID()},data:payload});
+  const body=await response.json() as {status?:number;result?:unknown;error?:string};
+  expect(response.status(),body.error||JSON.stringify(body)).toBe(200);
+  expect(body.status,body.error||JSON.stringify(body)).toBe(200);
+  return body;
 }
 async function setup(browser:Browser){
   const guardian=await browser.newContext();
   const teen=await browser.newContext();
   const stamp=Date.now();
   await register(guardian,'Guardian','insurance-g-'+stamp+'@example.test');
-  const created=await (await workspace(guardian,{action:'household.create',name:'Insurance household',adultAttestation:true})).json() as WorkspaceCreateResponse;
+  const created=await workspace(guardian,{action:'household.create',name:'Insurance household',adultAttestation:true}) as {status:number;result:WorkspaceCreateResponse['result']};
   const householdId=created.result.id;
-  const invitation=await (await workspace(guardian,{action:'invite.create',householdId,role:'teen'})).json() as InviteResponse;
+  const invitation=await workspace(guardian,{action:'invite.create',householdId,role:'teen'}) as {status:number;result:InviteResponse['result']};
   await register(teen,'Teen','insurance-t-'+stamp+'@example.test');
   await workspace(teen,{action:'invite.accept',token:invitation.result.token});
   const ws=await (await teen.request.get('/api/workspace')).json() as WorkspaceResponse;
