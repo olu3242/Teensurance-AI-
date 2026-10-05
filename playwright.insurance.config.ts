@@ -23,6 +23,7 @@ export default defineConfig({
       NEXT_DIST_DIR:'.next-insurance-cert',
       TEENSURANCE_DB_PATH:resolve('test-results/insurance-cert.sqlite'),
       TEENSURANCE_INSURANCE_E2E:'1',
+      NEXT_PUBLIC_WAITLIST_MODE:'false',
       TEENSURANCE_CARRIER_WEBHOOK_SECRETS:'{"certification-carrier":"insurance-cert-secret"}'
     }
   }
