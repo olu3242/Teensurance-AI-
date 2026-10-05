@@ -1,4 +1,3 @@
-import {randomUUID} from 'node:crypto';
 import {all,put} from '../platform/db';
 import {AppError} from '../platform/auth';
 import type {Drive,Evidence,Member,Profile,User} from '../platform/types';
