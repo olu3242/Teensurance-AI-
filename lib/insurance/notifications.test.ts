@@ -1,0 +1,59 @@
+import {beforeEach,describe,expect,it,vi} from 'vitest';
+
+const all=vi.fn();
+const put=vi.fn(async(_k:string,v:unknown)=>v);
+vi.mock('../platform/db',()=>({all,put}));
+
+const user={id:'g',name:'Guardian',email:'g@example.com'};
+
+describe('insurance notifications',()=>{
+  beforeEach(()=>{
+    vi.clearAllMocks();
+    all.mockImplementation((kind:string)=>{
+      if(kind==='member')return Promise.resolve([{id:'m',ownerId:'g',role:'guardian',active:true}]);
+      if(kind==='insurance_policy')return Promise.resolve([{id:'p',ownerId:'g',teenId:'t',handoffId:'bh',carrierId:'c',externalPolicyId:'P',status:'ACTIVE',confirmedAt:'2026-10-01'}]);
+      if(kind==='insurance_bind_handoff')return Promise.resolve([{id:'bh',ownerId:'g',state:'ACTIVE',externalReference:'ext',updatedAt:'2026-10-01'}]);
+      if(kind==='insurance_carrier_event')return Promise.resolve([{event:{externalReference:'ext',type:'policy.active',occurredAt:'2026-10-01',renewalAt:'2026-11-01'}}]);
+      if(kind==='insurance_quote_session')return Promise.resolve([]);
+      if(kind==='insurance_savings_evidence')return Promise.resolve([{id:'s1',ownerId:'g',kind:'realized',savingsCents:36000}]);
+      if(kind==='insurance_value_milestone')return Promise.resolve([{id:'m1',ownerId:'g',label:'Carrier-confirmed annualized value reached $500'}]);
+      if(kind==='insurance_notification')return Promise.resolve([]);
+      return Promise.resolve([]);
+    });
+  });
+
+  it('creates actionable guardian notifications and suppresses duplicates',async()=>{
+    const {generateInsuranceNotifications}=await import('./notifications');
+    const first=await generateInsuranceNotifications(user,'h',new Date('2026-10-04T00:00:00Z'));
+    expect(first.created.map(n=>n.kind)).toEqual(expect.arrayContaining(['renewal_approaching','policy_activated','new_realized_savings','value_milestone']));
+    expect(first.created.every(n=>Boolean(n.cta.label&&n.cta.href))).toBe(true);
+
+    const created=first.created;
+    all.mockImplementation((kind:string)=>{
+      if(kind==='member')return Promise.resolve([{id:'m',ownerId:'g',role:'guardian',active:true}]);
+      if(kind==='insurance_notification')return Promise.resolve(created);
+      if(kind==='insurance_policy')return Promise.resolve([{id:'p',ownerId:'g',teenId:'t',handoffId:'bh',carrierId:'c',externalPolicyId:'P',status:'ACTIVE',confirmedAt:'2026-10-01'}]);
+      if(kind==='insurance_bind_handoff')return Promise.resolve([{id:'bh',ownerId:'g',state:'ACTIVE',externalReference:'ext',updatedAt:'2026-10-01'}]);
+      if(kind==='insurance_carrier_event')return Promise.resolve([{event:{externalReference:'ext',type:'policy.active',occurredAt:'2026-10-01',renewalAt:'2026-11-01'}}]);
+      if(kind==='insurance_savings_evidence')return Promise.resolve([{id:'s1',ownerId:'g',kind:'realized',savingsCents:36000}]);
+      if(kind==='insurance_value_milestone')return Promise.resolve([{id:'m1',ownerId:'g',label:'Carrier-confirmed annualized value reached $500'}]);
+      return Promise.resolve([]);
+    });
+
+    const second=await generateInsuranceNotifications(user,'h',new Date('2026-10-04T00:00:00Z'));
+    expect(second.created).toHaveLength(0);
+    expect(second.suppressed).toBeGreaterThan(0);
+  });
+
+  it('flags a stalled bind after 24 hours',async()=>{
+    all.mockImplementation((kind:string)=>{
+      if(kind==='member')return Promise.resolve([{id:'m',ownerId:'g',role:'guardian',active:true}]);
+      if(kind==='insurance_bind_handoff')return Promise.resolve([{id:'bh',ownerId:'g',state:'CARRIER_REVIEW',externalReference:'ext',updatedAt:'2026-10-01T00:00:00Z'}]);
+      return Promise.resolve([]);
+    });
+    const {generateInsuranceNotifications}=await import('./notifications');
+    const result=await generateInsuranceNotifications(user,'h',new Date('2026-10-03T00:00:00Z'));
+    expect(result.created[0]?.kind).toBe('bind_incomplete');
+    expect(result.created[0]?.priority).toBe('high');
+  });
+});

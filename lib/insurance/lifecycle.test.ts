@@ -1,0 +1,16 @@
+import {beforeEach,describe,expect,it,vi} from 'vitest';
+const all=vi.fn();vi.mock('../platform/db',()=>({all}));
+const user={id:'guardian-1',name:'Guardian',email:'guardian@example.com'};
+describe('parent insurance lifecycle dashboard',()=>{
+ beforeEach(()=>{vi.clearAllMocks();all.mockImplementation((kind:string)=>{
+  if(kind==='member')return Promise.resolve([{id:'m',householdId:'h',ownerId:'guardian-1',role:'guardian',name:'Guardian',active:true}]);
+  if(kind==='profile')return Promise.resolve([{id:'p',householdId:'h',ownerId:'teen-1',name:'Alex',birthDate:'2010-01-01',jurisdiction:'TX',stage:'permit',goalMinutes:1,permitDate:'2026-01-01',suspensionDays:0,consent:true,consentVersion:'v1',adultSharing:false}]);
+  if(kind==='insurance_policy')return Promise.resolve([{id:'policy-1',householdId:'h',ownerId:'guardian-1',teenId:'teen-1',handoffId:'handoff-1',carrierId:'carrier-1',externalPolicyId:'P123',status:'ACTIVE',effectiveAt:'2026-10-05',confirmedAt:'2026-10-04'}]);
+  if(kind==='insurance_bind_handoff')return Promise.resolve([{id:'handoff-1',householdId:'h',ownerId:'guardian-1',teenId:'teen-1',selectionId:'s',carrierId:'carrier-1',quoteId:'q1',state:'ACTIVE',externalReference:'ext-1',createdAt:'2026-10-04T10:00:00Z',updatedAt:'2026-10-04T11:00:00Z'}]);
+  if(kind==='insurance_quote_session')return Promise.resolve([{id:'qs',householdId:'h',ownerId:'guardian-1',teenId:'teen-1',idempotencyKey:'k',fingerprint:'f',normalizedRequest:{vehicles:[{year:2025,make:'Honda',model:'Civic',vin:'1HGCM82633A123456'}]},results:[{carrierId:'carrier-1',status:'quoted',quote:{quoteId:'q1'}}],status:'completed',createdAt:'2026-10-04'}]);
+  if(kind==='insurance_carrier_event')return Promise.resolve([{event:{externalReference:'ext-1',type:'policy.active',occurredAt:'2026-10-04T11:00:00Z',renewalAt:'2027-04-05',documents:[{kind:'id_card',label:'Insurance ID card',available:true,externalUrl:'https://carrier.example/id-card'}]}},{event:{externalReference:'ext-1',type:'policy.non_renewal',occurredAt:'2027-03-01T10:00:00Z',nonRenewalAt:'2027-04-05',documents:[{kind:'renewal_notice',label:'Non-renewal notice',available:true,externalUrl:'https://carrier.example/notice'}]}}]);
+  return Promise.resolve([]);
+ })});
+ it('projects carrier-confirmed coverage and non-renewal attention',async()=>{const {parentInsuranceDashboard}=await import('./lifecycle');const result=await parentInsuranceDashboard(user,'h');expect(result.policies[0]?.teenName).toBe('Alex');expect(result.policies[0]?.coveredVehicles[0]).toEqual({year:2025,make:'Honda',model:'Civic',vinLast4:'3456'});expect(result.policies[0]?.renewalAt).toBe('2027-04-05');expect(result.policies[0]?.status).toBe('NON_RENEWAL_PENDING');expect(result.attentionCount).toBe(1)});
+ it('denies non-guardian policy access',async()=>{all.mockImplementation((kind:string)=>kind==='member'?Promise.resolve([{id:'m',householdId:'h',ownerId:'guardian-1',role:'teen',name:'Teen',active:true}]):Promise.resolve([]));const {parentInsuranceDashboard}=await import('./lifecycle');await expect(parentInsuranceDashboard(user,'h')).rejects.toThrow('Guardian insurance access required')});
+});
