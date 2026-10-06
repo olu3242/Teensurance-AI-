@@ -123,7 +123,19 @@ async function apply(user:User,c:Command):Promise<unknown>{
 
 export async function dashboard(user:User,requested?:string):Promise<Dashboard>{return (await transaction(async ()=>{
  const admin=isPlatformAdmin(user);const allMemberships=await all<Member>('member');const memberships=admin?allMemberships:allMemberships.filter(m=>m.ownerId===user.id&&m.active);const allHouseholds=await all<Household>('household');const households=admin?allHouseholds:allHouseholds.filter(h=>memberships.some(m=>m.householdId===h.id));const household=households.find(h=>h.id===requested)||(!requested?households[0]:undefined);if(requested&&!household)fail('Household access denied.');
- const empty:Dashboard={user,households,members:[],profiles:[],relationships:[],drives:[],evidence:[],reminders:[],journeys:[],audit:[]};if(!household)return empty;
+ const empty:Dashboard={user,platformAdmin:admin,households,members:[],profiles:[],relationships:[],drives:[],evidence:[],reminders:[],journeys:[],audit:[]};if(!household)return empty;
+ if(admin){
+  const members=await all<Member>('member',household.id);
+  const profiles=await all<Profile>('profile',household.id);
+  const relationships=await all<Relationship>('relationship',household.id);
+  const drives=await all<Drive>('drive',household.id);
+  const evidence=await all<Evidence>('evidence',household.id);
+  const reminders=await all<Reminder>('reminder',household.id);
+  const journeys=await Promise.all(profiles.map(async p=>({teenId:p.ownerId,...journey(p,drives,evidence,[texasRule],await totals(household.id,p.ownerId,drives)),totals:await totals(household.id,p.ownerId,drives)})));
+  const auditRows=await db().prepare('SELECT * FROM audit WHERE household_id=? ORDER BY at DESC LIMIT 100').all(household.id);
+  await audit(user.id,household.id,'dashboard.read','ALLOW','Platform administrator inspected household operations.');
+  return {...empty,household,members,profiles,relationships,drives,evidence,reminders,journeys,audit:auditRows};
+ }
  const member=(await membership(user.id,household.id))!;const activeDrive=(await activeFor(user.id));if(activeDrive){(await audit(user.id,household.id,'dashboard.read','DEFER','Only the active drive is visible while driving.'));return {...empty,household,membership:member,activeDrive}}
  const householdLinks=await all<Relationship>('relationship',household.id);const linked=(teenId:string)=>householdLinks.some(r=>r.active&&r.adultId===user.id&&r.teenId===teenId&&r.kind==='guardian');
  const relationships=householdLinks.filter(r=>r.active&&(r.adultId===user.id||r.teenId===user.id||linked(r.teenId)));
