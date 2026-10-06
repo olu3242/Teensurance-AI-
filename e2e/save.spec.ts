@@ -55,6 +55,8 @@ test('platform admin inspects SAVE end to end without becoming the insurance act
   coverageFingerprint:'100-300-100|500|comp-collision',source:'quote'
  });
  await post(parent,'/api/save',{action:'savings.verify',householdId:household,quoteId:quote.id});
+ const handoff=await post(parent,'/api/save/transaction',{action:'cover.prepare',householdId:household,quoteId:quote.id});
+ expect(handoff.status).toBe('prepared');
 
  expect((await teen.request.get('/api/save?household='+household)).status()).toBe(403);
  expect((await teen.request.get('/api/admin/save')).status()).toBe(403);
@@ -76,6 +78,25 @@ test('platform admin inspects SAVE end to end without becoming the insurance act
  await expect(adminPage.getByText('$600')).toBeVisible();
  await expect(adminPage.getByRole('heading',{name:'Verified savings ledger'})).toBeVisible();
  await expect(adminPage.getByText('Comparable Carrier')).toBeVisible();
+
+ const coverPage=await admin.newPage();
+ await coverPage.goto('/admin/cover');
+ await expect(coverPage.getByRole('heading',{name:'COVER operations'})).toBeVisible();
+ await expect(coverPage.getByText('Comparable Carrier')).toBeVisible();
+ await expect(coverPage.getByText(household)).toBeVisible();
+
+ await coverPage.getByRole('button',{name:'Create incident'}).click();
+ await expect(coverPage.getByText('manual review')).toBeVisible();
+ await expect(coverPage.getByText('open',{exact:true})).toBeVisible();
+
+ await coverPage.getByRole('button',{name:'Acknowledge'}).click();
+ await expect(coverPage.getByText('acknowledged',{exact:true})).toBeVisible();
+
+ await coverPage.getByRole('button',{name:'Resolve'}).click();
+ await expect(coverPage.getByText('resolved',{exact:true})).toBeVisible();
+
+ const teenCover=await teen.request.get('/api/admin/cover');
+ expect(teenCover.status()).toBe(403);
 
  await parent.close();await teen.close();await admin.close();
 });
