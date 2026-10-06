@@ -1,0 +1,55 @@
+name: Admin Control Plane certify
+
+on:
+  push:
+    branches:
+      - reconcile/platform-admin-save-cover
+    paths:
+      - 'lib/platform/admin.ts'
+      - 'lib/platform/service.ts'
+      - 'lib/platform/types.ts'
+      - 'lib/platform/operations.ts'
+      - 'lib/platform/*.test.ts'
+      - 'app/pilot/**'
+      - 'app/admin/**'
+      - 'app/api/admin/**'
+      - 'lib/save/**'
+      - 'e2e/save.spec.ts'
+      - 'playwright.save.config.ts'
+      - '.github/workflows/admin-control-plane-certify.yml'
+  pull_request:
+    paths:
+      - 'lib/platform/admin.ts'
+      - 'lib/platform/service.ts'
+      - 'lib/platform/types.ts'
+      - 'lib/platform/operations.ts'
+      - 'lib/platform/*.test.ts'
+      - 'app/pilot/**'
+      - 'app/admin/**'
+      - 'app/api/admin/**'
+      - 'lib/save/**'
+      - 'e2e/save.spec.ts'
+      - 'playwright.save.config.ts'
+      - '.github/workflows/admin-control-plane-certify.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build:cert
+      - run: npm run save:certify
+      - run: npm run test:save:e2e
