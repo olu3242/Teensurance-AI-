@@ -10,7 +10,8 @@ export type ParentWidget =
   | "time"
   | "family_progress"
   | "safety"
-  | "coverage";
+  | "coverage"
+  | "savings";
 
 export type AdminWidget =
   | "operations"
@@ -42,7 +43,8 @@ export const defaultDashboardPreferences: DashboardPreferences = {
     "time",
     "family_progress",
     "safety",
-    "coverage"
+    "coverage",
+    "savings"
   ],
 
   admin: [

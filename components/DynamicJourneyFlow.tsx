@@ -14,7 +14,7 @@ const steps=[
 export function DynamicJourneyFlow({waitlistMode=false,compact=false}:{waitlistMode?:boolean;compact?:boolean}){
  const [active,setActive]=useState(0);
  const [paused,setPaused]=useState(false);
- const prefersReduced=useMemo(()=>typeof window!=='undefined'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,false);
+ const prefersReduced=useMemo(()=>typeof window!=='undefined'&&window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,[]);
  useEffect(()=>{
   if(paused||prefersReduced)return;
   const timer=window.setInterval(()=>setActive(v=>(v+1)%steps.length),2200);
