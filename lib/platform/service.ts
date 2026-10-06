@@ -8,6 +8,7 @@ import {ageOn,journey} from './journey';
 import {texasRule} from './texas';
 import {agentContracts} from './agents';
 import {can,criticalProfileFields,permissionForAction} from './permissions';
+import {isPlatformAdmin} from './admin';
 
 const now=()=>new Date().toISOString();
 const base=(householdId:string,ownerId:string)=>({id:randomUUID(),householdId,ownerId});
@@ -16,7 +17,7 @@ export async function audit(actorId:string,householdId:string,action:string,deci
 async function membership(userId:string,householdId:string){return (await all<Member>('member',householdId)).find(m=>m.ownerId===userId&&m.active)}
 async function profile(householdId:string,teenId:string){return (await all<Profile>('profile',householdId)).find(p=>p.ownerId===teenId)}
 async function connected(userId:string,teenId:string,householdId:string,kind?:Relationship['kind']){return (await all<Relationship>('relationship',householdId)).some(r=>r.active&&r.adultId===userId&&r.teenId===teenId&&(!kind||r.kind===kind))}
-async function scope(user:User,householdId:string,teenId:string,guardian=false){const m=(await membership(user.id,householdId));if(!m)fail('Household access denied.');const p=(await profile(householdId,teenId));if(!p)fail('Complete the driver profile first.',409);if(guardian){if(m.role!=='guardian'||!(await connected(user.id,teenId,householdId,'guardian')))fail('A linked guardian must approve this action.')}else if(user.id!==teenId&&!(await connected(user.id,teenId,householdId)))fail('Driver access denied.');if(ageOn(p.birthDate)>=18&&user.id!==teenId&&!p.adultSharing)fail('The adult driver must renew family sharing consent.');return p}
+async function scope(user:User,householdId:string,teenId:string,guardian=false){const p=(await profile(householdId,teenId));if(!p)fail('Complete the driver profile first.',409);if(isPlatformAdmin(user))return p;const m=(await membership(user.id,householdId));if(!m)fail('Household access denied.');if(guardian){if(m.role!=='guardian'||!(await connected(user.id,teenId,householdId,'guardian')))fail('A linked guardian must approve this action.')}else if(user.id!==teenId&&!(await connected(user.id,teenId,householdId)))fail('Driver access denied.');if(ageOn(p.birthDate)>=18&&user.id!==teenId&&!p.adultSharing)fail('The adult driver must renew family sharing consent.');return p}
 function processingAllowed(p:Profile){return ageOn(p.birthDate)>=18||p.consent}
 async function driveResource(user:User,householdId:string,id:string){const d=(await get<Drive>('drive',id));if(!d||d.householdId!==householdId)fail('Drive not found.',404);(await scope(user,householdId,d.teenId));return d}
 async function activeFor(userId:string){return (await all<Drive>('drive')).find(d=>d.status==='active'&&(d.teenId===userId||d.supervisorId===userId))}
@@ -26,6 +27,7 @@ function assertDuration(minutes:number,nightMinutes:number){if(nightMinutes>minu
 async function assertNoOverlap(teenId:string,start:string,end:string,exceptId?:string){if((await all<Drive>('drive')).some(d=>d.id!==exceptId&&d.teenId===teenId&&d.status!=='cancelled'&&d.startedAt<end&&(d.endedAt||now())>start))fail('This session overlaps another recorded drive.',409)}
 
 async function policy(user:User,c:Command):Promise<{decision:SafetyDecision;reason:string}>{
+ if(isPlatformAdmin(user))return {decision:'ALLOW',reason:'Authorized platform administrator override.'};
  if((await activeFor(user.id))&&!['drive.end','drive.cancel'].includes(c.action))return {decision:'DEFER',reason:'Your drive comes first. Resume after parking.'};
  if('householdId'in c){
   const member=await membership(user.id,c.householdId);
@@ -120,7 +122,7 @@ async function apply(user:User,c:Command):Promise<unknown>{
 }
 
 export async function dashboard(user:User,requested?:string):Promise<Dashboard>{return (await transaction(async ()=>{
- const memberships=(await all<Member>('member')).filter(m=>m.ownerId===user.id&&m.active);const households=(await all<Household>('household')).filter(h=>memberships.some(m=>m.householdId===h.id));const household=households.find(h=>h.id===requested)||(!requested?households[0]:undefined);if(requested&&!household)fail('Household access denied.');
+ const admin=isPlatformAdmin(user);const allMemberships=await all<Member>('member');const memberships=admin?allMemberships:allMemberships.filter(m=>m.ownerId===user.id&&m.active);const allHouseholds=await all<Household>('household');const households=admin?allHouseholds:allHouseholds.filter(h=>memberships.some(m=>m.householdId===h.id));const household=households.find(h=>h.id===requested)||(!requested?households[0]:undefined);if(requested&&!household)fail('Household access denied.');
  const empty:Dashboard={user,households,members:[],profiles:[],relationships:[],drives:[],evidence:[],reminders:[],journeys:[],audit:[]};if(!household)return empty;
  const member=(await membership(user.id,household.id))!;const activeDrive=(await activeFor(user.id));if(activeDrive){(await audit(user.id,household.id,'dashboard.read','DEFER','Only the active drive is visible while driving.'));return {...empty,household,membership:member,activeDrive}}
  const householdLinks=await all<Relationship>('relationship',household.id);const linked=(teenId:string)=>householdLinks.some(r=>r.active&&r.adultId===user.id&&r.teenId===teenId&&r.kind==='guardian');
