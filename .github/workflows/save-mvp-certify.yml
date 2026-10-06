@@ -5,6 +5,8 @@ on:
     paths:
       - 'lib/save/**'
       - 'app/api/save/**'
+      - 'app/api/admin/save/**'
+      - 'app/admin/save/**'
       - 'app/dashboard/parent/save/**'
       - 'components/Save**'
       - 'e2e/save.spec.ts'
@@ -19,6 +21,8 @@ on:
     paths:
       - 'lib/save/**'
       - 'app/api/save/**'
+      - 'app/api/admin/save/**'
+      - 'app/admin/save/**'
       - 'app/dashboard/parent/save/**'
       - 'components/Save**'
       - 'e2e/save.spec.ts'
