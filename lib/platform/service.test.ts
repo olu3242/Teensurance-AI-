@@ -78,5 +78,18 @@ describe('local platform certification',()=>{
   expect((await run(teen,{action:'drive.end',householdId,id:started.result.id,parked:true})).status).toBe(200);
   expect((await dashboard(teen)).activeDrive).toBeUndefined();expect((await all<Drive>('drive'))[0].status).toBe('draft');
  });
+ it('provides non-impersonating platform-admin household inspection',async ()=>{
+  const {teen,stranger,householdId}=await setup();
+  await expect(dashboard(stranger,householdId)).rejects.toThrow('Household access denied');
+  process.env.TEENSURANCE_ADMIN_USER_IDS=stranger.id;
+  const view=await dashboard(stranger,householdId);
+  expect(view.platformAdmin).toBe(true);
+  expect(view.household?.id).toBe(householdId);
+  expect(view.membership).toBeUndefined();
+  expect(view.profiles.some(p=>p.ownerId===teen.id)).toBe(true);
+  expect(view.members.some(m=>m.ownerId===teen.id)).toBe(true);
+  const auditRows=await db().prepare("SELECT action,actor_id,household_id FROM audit WHERE action='dashboard.read' AND actor_id=? AND household_id=?").all(stranger.id,householdId);
+  expect(auditRows.length).toBeGreaterThan(0);
+ });
  it('limits supervisor visibility and makes invites one-use',async ()=>{const {parent,teen,stranger,householdId}=(await setup());const inv=(await run(parent,{action:'invite.create',householdId,role:'supervisor',teenId:teen.id})) as {result:{token:string}};expect((await run(stranger,{action:'invite.accept',token:inv.result.token,adultAttestation:true})).status).toBe(200);expect((await run(stranger,{action:'invite.accept',token:inv.result.token,adultAttestation:true})).status).toBe(400);const view=(await dashboard(stranger));expect(view.evidence).toEqual([]);expect(view.journeys).toEqual([]);expect(view.profiles).toEqual([]);expect((await run(stranger,{action:'consent.set',householdId,teenId:teen.id,granted:true})).status).toBe(403)});
 });
